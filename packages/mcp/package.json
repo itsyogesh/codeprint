@@ -1,0 +1,61 @@
+{
+  "name": "@codeprint/mcp",
+  "version": "0.1.0",
+  "description": "Local Codeprint MCP server for readable PDFs and confirmed print jobs.",
+  "keywords": [
+    "codeprint",
+    "mcp",
+    "model-context-protocol",
+    "markdown-to-pdf",
+    "code-to-pdf",
+    "ai-tools",
+    "printing",
+    "local-first"
+  ],
+  "homepage": "https://codeprint.app/mcp",
+  "bugs": {
+    "url": "https://github.com/itsyogesh/codeprint/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsyogesh/codeprint.git",
+    "directory": "packages/mcp"
+  },
+  "author": "Yogesh Kumar",
+  "type": "module",
+  "bin": {
+    "codeprint-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --platform node",
+    "dev": "node --import tsx src/index.ts",
+    "smoke": "node --import tsx tests/smoke.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@codeprint/core": "0.1.0",
+    "@codeprint/print": "0.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "react": "^19",
+    "zod": "^4.4.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "AGPL-3.0-only"
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@codeprint/cli",
+  "version": "0.1.0",
+  "description": "Render and print code, Markdown, and CSV from the terminal.",
+  "keywords": [
+    "codeprint",
+    "cli",
+    "markdown-to-pdf",
+    "code-to-pdf",
+    "csv-to-pdf",
+    "json-to-pdf",
+    "syntax-highlighting",
+    "printing"
+  ],
+  "homepage": "https://codeprint.app/cli",
+  "bugs": {
+    "url": "https://github.com/itsyogesh/codeprint/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsyogesh/codeprint.git",
+    "directory": "packages/cli"
+  },
+  "author": "Yogesh Kumar",
+  "type": "module",
+  "bin": {
+    "codeprint": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --platform node",
+    "dev": "node --import tsx src/index.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@codeprint/core": "0.1.0",
+    "@codeprint/print": "0.1.0",
+    "commander": "^15.0.0",
+    "react": "^19"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "AGPL-3.0-only"
+}

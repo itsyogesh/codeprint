@@ -1,0 +1,52 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-npm-packages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - name: Check out the release commit
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Use the supported npm baseline
+        run: npm install --global npm@10.9.4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Verify packages
+        run: npm run release:check
+
+      - name: Publish core
+        run: npm publish --workspace @codeprint/core --access public --provenance
+
+      - name: Publish print service
+        run: npm publish --workspace @codeprint/print --access public --provenance
+
+      - name: Publish CLI
+        run: npm publish --workspace @codeprint/cli --access public --provenance
+
+      - name: Publish MCP server
+        run: npm publish --workspace @codeprint/mcp --access public --provenance

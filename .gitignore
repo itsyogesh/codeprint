@@ -1,0 +1,47 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+**/node_modules
+
+# next.js
+/.next/
+**/.next/
+/out/
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
+
+# production
+/build
+**/dist
+/output/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+/tmp/
+/.npm-cache/
+
+# Private product research and design workbench artifacts
+/prompts/
+/docs/plans/
+/docs/research/
+/docs/design-implementation-map.md
+/docs/seo-launch-plan.md
+/gemini-landing-page-prompt.md
+/SEO_STRATEGY.md
+/plan.md
+
+# env files
+.env*
+!.env.example
+!**/.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

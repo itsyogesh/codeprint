@@ -1,0 +1,283 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 24.6 95% 53.1%;
+    --scrollbar-thumb: rgb(100 116 139 / 0.38);
+    --scrollbar-thumb-hover: rgb(71 85 105 / 0.62);
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 24.6 95% 53.1%;
+    --scrollbar-thumb: rgb(148 163 184 / 0.32);
+    --scrollbar-thumb-hover: rgb(203 213 225 / 0.52);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  *::-webkit-scrollbar-track,
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    min-height: 36px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: var(--scrollbar-thumb);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: rgb(249 115 22 / 0.28);
+    color: rgb(124 45 18);
+  }
+
+  .dark ::selection {
+    color: rgb(254 215 170);
+  }
+}
+
+@layer utilities {
+  .animate-marquee-left {
+    animation: marquee-left 30s linear infinite;
+  }
+
+  .animate-marquee-right {
+    animation: marquee-right 30s linear infinite;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 640px;
+  }
+
+  .leading-display {
+    line-height: 1.08;
+  }
+
+  .leading-heading {
+    line-height: 1.2;
+  }
+
+  .leading-copy {
+    line-height: 1.5;
+  }
+
+  .leading-copy-sm {
+    line-height: 1.45;
+  }
+
+  .leading-editorial {
+    line-height: 1.55;
+  }
+}
+
+@layer components {
+  .card-link-arrow,
+  .nav-language-icon,
+  .format-pipeline-paper,
+  .language-card {
+    transition-duration: 180ms;
+    transition-property: transform, border-color, background-color, color;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-motion-link:not([data-active="true"]):hover,
+  .copy-button-motion:hover,
+  .developer-surface-button:hover {
+    transform: translateY(-1px);
+  }
+
+  .primary-cta-motion:hover {
+    transform: translateY(-2px);
+  }
+
+  .developer-surface-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .group:hover .card-link-arrow {
+    transform: translateX(4px);
+  }
+
+  .group:hover .primary-cta-arrow {
+    transform: translateX(2px);
+  }
+
+  .group:hover .home-hero-arrow {
+    transform: translateY(2px);
+  }
+
+  .group:hover .nav-language-icon {
+    transform: scale(1.1);
+  }
+
+  .group:hover .format-pipeline-paper {
+    transform: translateY(-4px);
+  }
+
+  .language-card:hover {
+    border-color: rgb(249 115 22 / 0.3);
+    background-color: rgb(248 250 252);
+  }
+
+  .language-motion-chip:hover {
+    border-color: rgb(249 115 22);
+    color: rgb(249 115 22);
+  }
+
+  .dark .language-card:hover {
+    background-color: rgb(255 255 255 / 0.04);
+  }
+}
+
+@keyframes marquee-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation-play-state: paused;
+  }
+
+  .card-link-arrow,
+  .primary-cta-arrow,
+  .home-hero-arrow,
+  .nav-language-icon,
+  .format-pipeline-paper,
+  .language-card {
+    transition-duration: 0.01ms;
+  }
+
+  .language-card:hover {
+    transform: none;
+  }
+
+  .group:hover .card-link-arrow,
+  .group:hover .primary-cta-arrow,
+  .group:hover .home-hero-arrow,
+  .group:hover .nav-language-icon,
+  .group:hover .format-pipeline-paper {
+    transform: none;
+  }
+}

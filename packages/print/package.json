@@ -1,0 +1,46 @@
+{
+  "name": "@codeprint/print",
+  "version": "0.1.0",
+  "description": "Safe local printer discovery and job submission for Codeprint.",
+  "keywords": [
+    "codeprint",
+    "printing",
+    "printer",
+    "cups",
+    "pdf",
+    "local-printing"
+  ],
+  "homepage": "https://codeprint.app/docs",
+  "bugs": {
+    "url": "https://github.com/itsyogesh/codeprint/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsyogesh/codeprint.git",
+    "directory": "packages/print"
+  },
+  "author": "Yogesh Kumar",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --platform node",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "AGPL-3.0-only"
+}
