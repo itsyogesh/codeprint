@@ -122,7 +122,7 @@ Run the CLI from the repository:
 npm run cli -- --help
 ```
 
-After publishing, users can run it without a permanent install:
+Run the published CLI without a permanent install:
 
 ```bash
 npx @codeprint/cli render README.md
@@ -172,7 +172,7 @@ Run the server over stdio:
 npm run mcp:start
 ```
 
-After publishing, an MCP client can launch the package with:
+An MCP client can launch the published package with:
 
 ```json
 {
@@ -193,6 +193,7 @@ Available tools:
 | Tool | Effect |
 | --- | --- |
 | `create_printable_pdf` | Writes a new local PDF without overwriting an existing file |
+| `preview_pdf` | Reopens an exact PDF created during the current server session |
 | `list_printers` | Lists configured printers |
 | `get_printer_capabilities` | Reads paper, duplex, and color options |
 | `prepare_print_job` | Validates a PDF and returns exact settings plus a short-lived token |
@@ -269,7 +270,7 @@ npm run release:check
 
 The web app in `apps/web` is a standard Next.js application and can be deployed to Vercel. Configure the project root as the repository root and use `npm run build`; the workspace build compiles shared packages before Next.js.
 
-The public packages belong to the `@codeprint` npm organization. The first release must be published by an organization owner with two-factor authentication. Publish in dependency order: core, print, CLI, then MCP.
+The public packages belong to the `@codeprint` npm organization. Releases publish in dependency order: core, print, CLI, then MCP.
 
 Before every release:
 
@@ -279,7 +280,7 @@ Before every release:
 4. Confirm the public history contains no private prompts, research, credentials, generated documents, or personal files.
 5. Verify the deployed source link resolves to the exact public release.
 
-After the first release, configure each package on npm with the GitHub Actions trusted publisher:
+Each package uses a GitHub Actions trusted publisher on npm:
 
 - Repository owner: `itsyogesh`
 - Repository: `codeprint`
@@ -338,7 +339,7 @@ text-extraction fixtures both pass.
 
 ### MCP client cannot find the executable
 
-Use an absolute Node or `npx` path in the client configuration, or install `@codeprint/mcp` globally after it is published.
+Use an absolute Node or `npx` path in the client configuration, or install `@codeprint/mcp` globally.
 
 ## Privacy
 
