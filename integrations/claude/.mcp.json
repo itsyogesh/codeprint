@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "codeprint": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/../../packages/mcp/dist/index.js"]
+    }
+  }
+}

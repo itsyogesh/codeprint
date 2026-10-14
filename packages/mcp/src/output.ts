@@ -17,7 +17,7 @@ export function getOutputDirectory() {
 }
 
 async function writeWithoutOverwrite(directory: string, filename: string, bytes: Uint8Array) {
-  await mkdir(directory, { recursive: true })
+  await mkdir(directory, { recursive: true, mode: 0o700 })
   const extension = extname(filename)
   const stem = filename.slice(0, -extension.length)
 
@@ -25,7 +25,7 @@ async function writeWithoutOverwrite(directory: string, filename: string, bytes:
     const candidate = copy === 1 ? filename : `${stem}-${copy}${extension}`
     const outputPath = join(directory, candidate)
     try {
-      const handle = await open(outputPath, "wx")
+      const handle = await open(outputPath, "wx", 0o600)
       try {
         await handle.writeFile(bytes)
       } finally {

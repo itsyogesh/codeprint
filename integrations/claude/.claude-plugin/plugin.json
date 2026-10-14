@@ -1,0 +1,9 @@
+{
+  "name": "codeprint",
+  "version": "0.1.0",
+  "description": "Local reading-copy PDFs, optional inline previews, and separately confirmed physical printing.",
+  "author": { "name": "Yogesh Kumar" },
+  "homepage": "https://codeprint.app/mcp",
+  "repository": "https://github.com/itsyogesh/codeprint",
+  "license": "AGPL-3.0-only"
+}

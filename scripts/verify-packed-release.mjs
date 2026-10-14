@@ -329,6 +329,8 @@ try {
   let previousManifest
   if (verifyExisting) previousManifest = JSON.parse(await readFile(join(artifactDirectory, manifestName), "utf8"))
   else {
+    const status = await run("git", ["status", "--porcelain", "--untracked-files=all"])
+    assert.equal(status.stdout.trim(), "", "Commit the reviewed source before creating release artifacts.")
     const existing = await readdir(artifactDirectory)
     assert(existing.length === 0, "Packing requires an empty artifact directory to avoid stale release artifacts.")
     console.log("Packing the existing builds; the caller is responsible for a fresh verified build first.")

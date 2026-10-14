@@ -82,6 +82,7 @@ jobs:
           const manifest = JSON.parse(await readFile('release-manifest.json', 'utf8'));
           const names = ['core', 'print', 'cli', 'mcp'];
           if (manifest.schemaVersion !== 1 || manifest.sourceCommit !== process.env.GITHUB_SHA || manifest.packages.length !== 4) throw Error('Release identity mismatch');
+          if (new Set(manifest.packages.map(pkg => pkg.version)).size !== 1) throw Error('Release versions do not match');
           const expected = new Set(['release-manifest.json']);
           for (const [index, pkg] of manifest.packages.entries()) {
             if (pkg.name !== `@codeprint/${names[index]}` || pkg.filename !== `codeprint-${names[index]}-${pkg.version}.tgz` || !/^\d+\.\d+\.\d+$/.test(pkg.version)) throw Error('Unexpected package identity');

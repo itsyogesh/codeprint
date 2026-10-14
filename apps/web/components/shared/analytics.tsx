@@ -11,6 +11,7 @@ import {
   ANALYTICS_PREFERENCES_EVENT,
   hasTrackingOptOut,
   isProductionHost,
+  revokeGoogleAnalytics,
   sanitizeAnalyticsUrl,
 } from "@/lib/analytics-privacy"
 
@@ -44,8 +45,9 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
     const syncConsent = (event: StorageEvent) => {
       if (event.key !== ANALYTICS_CONSENT_KEY && event.key !== null) return
       const next = event.newValue === "granted" ? "granted" : event.newValue === "denied" ? "denied" : null
+      if (next !== "granted") revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
       setConsent(next)
-      if (next !== "granted" && initializedGoogle.current) window.location.reload()
+      if (initializedGoogle.current) window.location.reload()
     }
     window.addEventListener(ANALYTICS_PREFERENCES_EVENT, open)
     window.addEventListener("storage", syncConsent)
@@ -53,7 +55,7 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
       window.removeEventListener(ANALYTICS_PREFERENCES_EVENT, open)
       window.removeEventListener("storage", syncConsent)
     }
-  }, [])
+  }, [validGoogleId])
 
   useEffect(() => {
     if (!production || consent !== "granted" || !validGoogleId) return
@@ -65,6 +67,7 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
       browser.dataLayer!.push(arguments)
     }
     if (!initializedGoogle.current) {
+      Reflect.set(browser, `ga-disable-${validGoogleId}`, false)
       browser.gtag("consent", "default", {
         analytics_storage: "granted",
         ad_storage: "denied",
@@ -91,6 +94,7 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
   }, [consent, pathname, production, validGoogleId])
 
   function choose(value: "granted" | "denied") {
+    if (value === "denied") revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
     try {
       localStorage.setItem(ANALYTICS_CONSENT_KEY, value)
     } catch {
@@ -99,9 +103,6 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
     setConsent(value)
     setPreferencesOpen(false)
     if (value === "denied") {
-      const browser = window as AnalyticsWindow
-      if (validGoogleId) Object.assign(browser, { [`ga-disable-${validGoogleId}`]: true })
-      browser.gtag?.("consent", "update", { analytics_storage: "denied" })
       // Reload removes optional scripts and stops already installed listeners.
       if (initializedGoogle.current) window.location.reload()
     } else if (initializedGoogle.current) window.location.reload()

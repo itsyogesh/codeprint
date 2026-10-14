@@ -74,7 +74,10 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
   )
 
   // Clear pending PDF snapshots on client disconnect, including stdio EOF.
-  server.server.onclose = () => printService.dispose()
+  server.server.onclose = () => {
+    printService.dispose()
+    documents.dispose()
+  }
 
   server.registerResource(
     "codeprint-defaults",
