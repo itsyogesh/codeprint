@@ -52,6 +52,11 @@ export interface CodeprintServerOptions {
   printService?: PrintService
 }
 
+// Some hosts show structuredContent only to UI widgets, not to the assistant.
+function jsonText(value: Record<string, unknown>) {
+  return { type: "text" as const, text: JSON.stringify(value, null, 2) }
+}
+
 function errorResult(action: string, error: unknown) {
   const message = error instanceof Error ? error.message : "An unexpected error occurred."
   console.error(`Codeprint MCP ${action} failed:`, error)
@@ -66,7 +71,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
   const printService = options.printService ?? createPrintService()
   const documents = new DocumentStore()
   const server = new McpServer(
-    { name: "codeprint", version: "0.1.0" },
+    { name: "codeprint", version: "0.1.1" },
     {
       instructions:
         "Use Codeprint to create local PDFs from Markdown, source code, JSON, or CSV. Physical printing is a separate two-step flow: prepare_print_job returns the exact settings, then submit_print_job may only be called after the user explicitly approves those settings.",
@@ -140,9 +145,10 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
         const rendered = await renderPrintablePdf(input as CreatePrintablePdfInput)
         const result = await writeRenderedPdf(rendered, outputDirectory)
         const preview = documents.add(rendered)
+        const metadata = { ...result, ...preview }
         return {
           content: [
-            { type: "text" as const, text: `Created a ${result.pages}-page PDF at ${result.path}` },
+            { type: "text" as const, text: `Created a ${result.pages}-page PDF at ${result.path}\n` },
             {
               type: "resource_link" as const,
               uri: preview.resourceUri,
@@ -152,8 +158,9 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
               mimeType: "application/pdf",
               size: result.sizeBytes,
             },
+            jsonText(metadata),
           ],
-          structuredContent: { ...result, ...preview },
+          structuredContent: metadata,
         }
       } catch (error) {
         return errorResult("create the PDF", error)
@@ -174,6 +181,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
       try {
         const document = documents.get(documentId)
         const resourceUri = `codeprint://documents/${documentId}`
+        const metadata = { documentId, resourceUri, pages: document.pages, sizeBytes: document.bytes.byteLength }
         return {
           content: [
             {
@@ -183,8 +191,9 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
               mimeType: "application/pdf",
               size: document.bytes.byteLength,
             },
+            jsonText(metadata),
           ],
-          structuredContent: { documentId, resourceUri, pages: document.pages, sizeBytes: document.bytes.byteLength },
+          structuredContent: metadata,
         }
       } catch (error) {
         return errorResult("preview the PDF", error)
@@ -213,6 +222,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
                 ? printers.map((printer) => printer.name).join("\n")
                 : "No printers are configured.",
             },
+            jsonText({ printers }),
           ],
           structuredContent: { printers },
         }
@@ -282,14 +292,16 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
           pdfPath,
           options: { printerId, copies, pageSize, duplex, color, pageRanges },
         })
+        const receipt = { ...prepared, printer: { ...prepared.printer }, options: { ...prepared.options } }
         return {
           content: [
             {
               type: "text" as const,
               text: `Prepared: ${prepared.summary}. Ask the user to approve these exact settings before calling submit_print_job.`,
             },
+            jsonText(receipt),
           ],
-          structuredContent: { ...prepared, printer: { ...prepared.printer }, options: { ...prepared.options } },
+          structuredContent: receipt,
         }
       } catch (error) {
         return errorResult("prepare the print job", error)
@@ -316,7 +328,10 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
       try {
         const submitted = await printService.submit(confirmationToken)
         return {
-          content: [{ type: "text" as const, text: `Submitted print job ${submitted.id}.` }],
+          content: [
+            { type: "text" as const, text: `Submitted print job ${submitted.id}.\n` },
+            jsonText({ ...submitted }),
+          ],
           structuredContent: { ...submitted },
         }
       } catch (error) {
@@ -354,6 +369,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
               type: "text" as const,
               text: jobs.length ? jobs.map((job) => job.id).join("\n") : "No incomplete print jobs.",
             },
+            jsonText({ jobs }),
           ],
           structuredContent: { jobs },
         }
@@ -376,7 +392,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
       try {
         await printService.cancelJob(jobId)
         return {
-          content: [{ type: "text" as const, text: `Cancelled print job ${jobId}.` }],
+          content: [{ type: "text" as const, text: `Cancelled print job ${jobId}.\n` }, jsonText({ cancelled: jobId })],
           structuredContent: { cancelled: jobId },
         }
       } catch (error) {

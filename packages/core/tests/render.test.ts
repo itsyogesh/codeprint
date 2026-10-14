@@ -35,8 +35,8 @@ function extractPdfPageLayout(bytes: Uint8Array, page: number) {
 
   const pageHeight = Number(extracted.stdout.match(/<page [^>]*height="([\d.]+)"/)?.[1])
   const words = Array.from(
-    extracted.stdout.matchAll(/<word [^>]*yMin="([\d.]+)" [^>]*yMax="([\d.]+)">([^<]*)<\/word>/g),
-    (match) => ({ yMin: Number(match[1]), yMax: Number(match[2]), text: match[3] }),
+    extracted.stdout.matchAll(/<word [^>]*xMin="([\d.]+)" [^>]*yMin="([\d.]+)" [^>]*yMax="([\d.]+)">([^<]*)<\/word>/g),
+    (match) => ({ xMin: Number(match[1]), yMin: Number(match[2]), yMax: Number(match[3]), text: match[4] }),
   )
   return { pageHeight, words }
 }
@@ -115,6 +115,34 @@ describe("renderPrintablePdf", () => {
   })
 
   describe.skipIf(!hasPdfText)("PDF text fidelity", () => {
+    it.each([
+      { format: "markdown" as const, codeTheme: "light" as const, colorized: true },
+      { format: "markdown" as const, codeTheme: "dark" as const, colorized: true },
+      { format: "code" as const, codeTheme: "light" as const, colorized: true },
+      { format: "code" as const, codeTheme: "light" as const, colorized: false },
+    ])("preserves code indentation in $format ($codeTheme, highlighting $colorized)", async (options) => {
+      const code = 'def nested():\n    if True:\n        return "nested"\n\n\treturn "tabbed"'
+      const result = await renderPrintablePdf({
+        ...options,
+        content: options.format === "markdown" ? `\`\`\`python\n${code}\n\`\`\`` : code,
+        filename: "indentation.py",
+        language: "python",
+        fontSize: 12,
+        lineNumbers: false,
+      })
+      const { words } = extractPdfPageLayout(result.bytes, 1)
+      const baseline = words.find((word) => word.text === "def")!
+      const condition = words.find((word) => word.text === "if")!
+      const returns = words.filter((word) => word.text === "return")
+      expect(baseline).toBeDefined()
+      expect(condition).toBeDefined()
+      expect(returns).toHaveLength(2)
+      const characterWidth = (options.format === "markdown" ? 12 * 0.68 : 12 * 0.75) * 0.6
+      expect(condition.xMin - baseline.xMin).toBeCloseTo(characterWidth * 4, 1)
+      expect(returns[0].xMin - baseline.xMin).toBeCloseTo(characterWidth * 8, 1)
+      expect(returns[1].xMin - baseline.xMin).toBeCloseTo(characterWidth * 4, 1)
+    })
+
     it("renders Markdown page chrome on every physical page", async () => {
       const content = [
         "# Page chrome",

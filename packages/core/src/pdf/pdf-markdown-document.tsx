@@ -18,6 +18,7 @@ import {
   type PreparedMarkdownDiagrams,
 } from "../markdown-diagrams"
 import type { MarkdownSettings } from "../types"
+import { codeLineIndent } from "./code-indent"
 import { HLJS_COLORS, MARKDOWN_LEADING, markdownStyles, PAGE_POINT_SIZES, PAGE_SIZE_MAP } from "./pdf-styles"
 
 export interface PdfMarkdownDocumentProps {
@@ -471,6 +472,7 @@ function renderTable(table: Tokens.Table, context: RenderContext, keyPrefix: str
 
 function renderSourceCodeBlock(code: Tokens.Code, context: RenderContext, key: string) {
   const dark = context.settings.codeBlockTheme === "dark"
+  const codeFontSize = Math.max(7, context.settings.fontSize * 0.68)
   const maximumCharacters = markdownCodeCharactersPerLine(context)
   const lines = parseHighlightedCode(code.text, code.lang ?? "", dark).flatMap((line) =>
     splitCodeSegments(line, maximumCharacters),
@@ -492,30 +494,34 @@ function renderSourceCodeBlock(code: Tokens.Code, context: RenderContext, key: s
           {languageLabel}
         </Text>
       )}
-      {lines.map((line, lineIndex) => (
-        <Text
-          key={`${key}-line-${lineIndex}`}
-          hyphenationCallback={disableHyphenation}
-          style={{
-            color: dark ? "#c9d1d9" : "#24292e",
-            fontFamily: context.codeFont,
-            fontSize: Math.max(7, context.settings.fontSize * 0.68),
-            lineHeight: MARKDOWN_LEADING.code,
-          }}
-        >
-          {line.length
-            ? line.map((segment, index) => (
-                <Text
-                  key={`${key}-${lineIndex}-${index}`}
-                  style={segment.color ? { color: segment.color } : {}}
-                  hyphenationCallback={disableHyphenation}
-                >
-                  {segment.text}
-                </Text>
-              ))
-            : " "}
-        </Text>
-      ))}
+      {lines.map((line, lineIndex) => {
+        const textIndent = codeLineIndent(line, codeFontSize)
+        return (
+          <Text
+            key={`${key}-line-${lineIndex}`}
+            hyphenationCallback={disableHyphenation}
+            style={{
+              color: dark ? "#c9d1d9" : "#24292e",
+              fontFamily: context.codeFont,
+              fontSize: codeFontSize,
+              textIndent,
+              lineHeight: MARKDOWN_LEADING.code,
+            }}
+          >
+            {line.length
+              ? line.map((segment, index) => (
+                  <Text
+                    key={`${key}-${lineIndex}-${index}`}
+                    style={{ textIndent, ...(segment.color ? { color: segment.color } : {}) }}
+                    hyphenationCallback={disableHyphenation}
+                  >
+                    {segment.text}
+                  </Text>
+                ))
+              : " "}
+          </Text>
+        )
+      })}
     </View>
   )
 }

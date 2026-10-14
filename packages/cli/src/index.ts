@@ -125,7 +125,7 @@ export function createProgram() {
   const program = new Command()
     .name("codeprint")
     .description("Turn code, Markdown, and CSV into readable PDFs and local print jobs.")
-    .version("0.1.0")
+    .version("0.1.1")
     .option("--json", "write machine-readable JSON")
 
   addDocumentOptions(program.command("render [input]").description("Render a source file or stdin to PDF."))

@@ -33,6 +33,13 @@ describe("PDF resource and app protocol", () => {
       })
       expect(result.isError).not.toBe(true)
       const metadata = result.structuredContent as { path: string; resourceUri: string; documentId: string }
+      expect(result).toMatchObject({
+        content: [
+          { type: "text", text: `Created a 1-page PDF at ${metadata.path}\n` },
+          { type: "resource_link", uri: metadata.resourceUri, mimeType: "application/pdf" },
+          { type: "text", text: JSON.stringify(metadata, null, 2) },
+        ],
+      })
       const resource = await client.readResource({ uri: metadata.resourceUri })
       const returned = resource.contents[0] as { blob: string; mimeType: string }
       expect(returned.mimeType).toBe("application/pdf")
