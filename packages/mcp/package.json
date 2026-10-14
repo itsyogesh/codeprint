@@ -1,6 +1,6 @@
 {
   "name": "@codeprint/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local Codeprint MCP server for readable PDFs and confirmed print jobs.",
   "keywords": [
     "codeprint",
@@ -47,8 +47,8 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.viewer.json --noEmit"
   },
   "dependencies": {
-    "@codeprint/core": "0.1.0",
-    "@codeprint/print": "0.1.0",
+    "@codeprint/core": "0.1.1",
+    "@codeprint/print": "0.1.1",
     "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "pdfjs-dist": "5.4.296",

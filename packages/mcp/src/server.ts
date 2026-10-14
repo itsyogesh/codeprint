@@ -66,7 +66,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
   const printService = options.printService ?? createPrintService()
   const documents = new DocumentStore()
   const server = new McpServer(
-    { name: "codeprint", version: "0.1.0" },
+    { name: "codeprint", version: "0.1.1" },
     {
       instructions:
         "Use Codeprint to create local PDFs from Markdown, source code, JSON, or CSV. Physical printing is a separate two-step flow: prepare_print_job returns the exact settings, then submit_print_job may only be called after the user explicitly approves those settings.",
@@ -142,7 +142,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
         const preview = documents.add(rendered)
         return {
           content: [
-            { type: "text" as const, text: `Created a ${result.pages}-page PDF at ${result.path}` },
+            { type: "text" as const, text: `Created a ${result.pages}-page PDF at ${result.path}\n` },
             {
               type: "resource_link" as const,
               uri: preview.resourceUri,

@@ -4,6 +4,7 @@ import { Document, Page, Text, View } from "@react-pdf/renderer"
 import { registerLocalFontFamilyForText } from "../fonts/registry"
 import { SOURCE_CODE_PRO_LOCAL_FONT } from "../fonts/source-code-pro"
 import type { CodeSettings } from "../types"
+import { codeLineIndent } from "./code-indent"
 import { codeStyles, HLJS_COLORS, PAGE_POINT_SIZES } from "./pdf-styles"
 
 export interface PdfCodeDocumentProps {
@@ -187,19 +188,22 @@ function CodeLine({
         {(settings.colorized && entry.highlighted
           ? wrapHighlightedLines(parseHljsLine(entry.highlighted), charactersPerLine)
           : codeChunks(entry.text, charactersPerLine).map((text): Array<{ text: string; color?: string }> => [{ text }])
-        ).map((line, lineIndex) => (
-          <Text key={lineIndex} hyphenationCallback={disableHyphenation}>
-            {line.map((segment, segmentIndex) => (
-              <Text
-                key={segmentIndex}
-                style={segment.color ? { color: segment.color } : undefined}
-                hyphenationCallback={disableHyphenation}
-              >
-                {segment.text || " "}
-              </Text>
-            ))}
-          </Text>
-        ))}
+        ).map((line, lineIndex) => {
+          const textIndent = codeLineIndent(line, fontSize)
+          return (
+            <Text key={lineIndex} hyphenationCallback={disableHyphenation} style={{ textIndent }}>
+              {line.map((segment, segmentIndex) => (
+                <Text
+                  key={segmentIndex}
+                  style={{ textIndent, ...(segment.color ? { color: segment.color } : {}) }}
+                  hyphenationCallback={disableHyphenation}
+                >
+                  {segment.text || " "}
+                </Text>
+              ))}
+            </Text>
+          )
+        })}
       </View>
     </View>
   )

@@ -1,6 +1,6 @@
 {
   "name": "@codeprint/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared document model and PDF renderer for Codeprint.",
   "keywords": [
     "codeprint",
