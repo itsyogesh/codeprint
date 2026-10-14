@@ -66,10 +66,10 @@ export async function writePdf(rendered: RenderedPdf, output: string | undefined
     kind === "directory" || (kind === "missing" && extname(requested).toLowerCase() !== ".pdf")
       ? resolve(requested, rendered.suggestedFilename)
       : requested
-  await mkdir(dirname(outputPath), { recursive: true })
+  await mkdir(dirname(outputPath), { recursive: true, mode: 0o700 })
   let handle: FileHandle
   try {
-    handle = await open(outputPath, force ? "w" : "wx")
+    handle = await open(outputPath, force ? "w" : "wx", 0o600)
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "EEXIST") {
       throw new Error(`Output already exists at ${outputPath}. Use --force to replace it.`)

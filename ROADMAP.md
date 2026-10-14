@@ -1,15 +1,16 @@
 # Codeprint roadmap
 
-Last updated: 2026-08-12
+Last updated: 2026-10-15
 
 This file tracks the public product and launch pipeline. Private design prompts,
 research notes, and working plans are intentionally kept outside the repository.
 
 ## Launch shape
 
-Codeprint launches as a free, open-source browser product for code, Markdown,
-and CSV. The CLI and MCP packages follow as a second reveal after their first
-public npm release and real-printer validation.
+Codeprint's combined release includes the free, open-source browser product,
+CLI, and local MCP server for code, Markdown, JSON, and CSV. The browser product
+is already live. Keep developer-tool discovery hidden until the npm packages
+are usable and release validation passes, then reveal all three together.
 
 The original Codeprint source uses `AGPL-3.0-only`. The first release has no
 paid tier. The public licensing and sustainability decision is recorded in
@@ -38,6 +39,9 @@ remote printer access, or Windows direct printing.
 - [x] Bundled local Mulish, Merriweather, and Source Code Pro faces with exact Latin and Cyrillic text extraction
 - [x] Print-safe Markdown Mermaid rendering for flowchart, state, sequence, class, and ER diagrams
 - [x] Unsupported Mermaid families preserve source instead of failing document generation
+- [x] Byte-bound print approvals, immutable settings, single-use tokens, expiry, and bounded private snapshots
+- [x] Dependency remediation with a clean full audit, preserving established design tokens
+- [x] Isolated consumer tests for exact package tarballs, installed CLI shortcuts, and real-stdio MCP resources
 
 ## Gate 1: public repository
 
@@ -46,10 +50,10 @@ remote printer access, or Windows direct printing.
 - [x] Move private prompts, research, and working plans into the sibling private workbench
 - [x] Add contributor guidelines and a security reporting policy
 - [x] Add third-party notices for bundled fonts, rendering libraries, and externally served icons
-- [ ] Replace the current private history with a reviewed public history that excludes private prompts and research
-- [ ] Remove remote refs that expose private workbench artifacts before changing repository visibility
+- [x] Replace the current private history with a reviewed public history that excludes private prompts and research
+- [x] Remove remote refs that expose private workbench artifacts before changing repository visibility
 - [x] Run a full history-aware secret scan and review generated or personal files
-- [ ] Make `itsyogesh/codeprint` public only after the checks above pass
+- [x] Make `itsyogesh/codeprint` public only after the checks above pass
 - [ ] Enable issues, discussions if desired, private vulnerability reporting, and branch protection
 
 ## Gate 2: editorial rendering and output parity
@@ -70,15 +74,16 @@ remote printer access, or Windows direct printing.
 
 ## Gate 3: web production launch
 
-- [ ] Deploy the monorepo web app to Vercel
+- [x] Deploy the monorepo web app to Vercel
 - [ ] Attach `codeprint.app`, configure HTTPS, and redirect `www` to the canonical non-www domain
 - [ ] Verify every production route, redirect, canonical, sitemap entry, and Open Graph image
 - [ ] Test download and browser printing in current Chrome, Safari, and Firefox
 - [ ] Test responsive layout, keyboard operation, reduced motion, and light/dark themes
 - [ ] Run Lighthouse and fix launch-blocking accessibility or Core Web Vitals issues
-- [ ] Keep CLI and MCP navigation, sitemap discovery, and indexing disabled for the browser-first launch
+- [ ] Reveal CLI and MCP navigation, sitemap discovery, and indexing for the combined release after npm verification
 - [ ] Set up privacy-safe product events without collecting document contents or filenames
-- [ ] Verify Google Search Console and Bing Webmaster Tools, then submit the sitemap
+- [x] Verify personal Google Search Console ownership and submit the valid sitemap
+- [ ] Verify Bing Webmaster Tools
 - [ ] Publish at least two useful guides before exposing the blog in primary navigation
 
 ## Gate 4: npm, CLI, and MCP release
@@ -106,7 +111,7 @@ remote printer access, or Windows direct printing.
 
 1. Public-repository preparation
 2. Editorial parity and launch QA
-3. Browser launch on `codeprint.app`
-4. npm package release
-5. CLI and MCP reveal
+3. Verify exact package artifacts and complete the first npm publications
+4. Verify clean registry installs, actual MCP-host previews, and printer behavior
+5. Deploy the combined web, CLI, and MCP reveal on `codeprint.app`
 6. Search-led iteration and editorial improvements

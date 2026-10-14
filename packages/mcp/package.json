@@ -37,17 +37,21 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --platform node",
+    "build": "tsup src/index.ts --format esm --dts --clean --platform node && node scripts/build-preview.mjs",
     "dev": "node --import tsx src/index.ts",
     "smoke": "node --import tsx tests/smoke.ts",
+    "pretest": "node scripts/build-preview.mjs",
     "test": "vitest",
+    "pretest:run": "node scripts/build-preview.mjs",
     "test:run": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.viewer.json --noEmit"
   },
   "dependencies": {
     "@codeprint/core": "0.1.0",
     "@codeprint/print": "0.1.0",
+    "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "pdfjs-dist": "5.4.296",
     "react": "^19",
     "zod": "^4.4.3"
   },
@@ -57,5 +61,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "AGPL-3.0-only"
+  "license": "AGPL-3.0-only",
+  "devDependencies": {
+    "esbuild": "0.27.3"
+  }
 }

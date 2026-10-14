@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { useState } from "react"
-import { CLI_COMMANDS, MCP_CONFIG } from "@/lib/developer-surfaces"
+import { CLI_COMMANDS, MCP_CLIENTS, MCP_RELEASE_AVAILABLE, MCP_SOURCE_CLIENTS } from "@/lib/developer-surfaces"
 import { cn } from "@/lib/utils"
 import { CopyButton } from "./copy-button"
 
@@ -85,11 +85,11 @@ export function CliCommandPlayground() {
   )
 }
 
-const MCP_CLIENTS = ["Claude Desktop", "Cursor", "VS Code", "Codex"] as const
-
 export function McpInstallTabs() {
-  const [activeClient, setActiveClient] = useState<(typeof MCP_CLIENTS)[number]>(MCP_CLIENTS[0])
+  const [activeClient, setActiveClient] = useState<string>(MCP_CLIENTS[0].label)
   const reduceMotion = useReducedMotion()
+  const clients = MCP_RELEASE_AVAILABLE ? MCP_CLIENTS : MCP_SOURCE_CLIENTS
+  const selected = clients.find((client) => client.label === activeClient) ?? clients[0]
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
@@ -100,21 +100,21 @@ export function McpInstallTabs() {
       >
         {MCP_CLIENTS.map((client) => (
           <button
-            key={client}
+            key={client.label}
             type="button"
             role="tab"
-            aria-selected={client === activeClient}
+            aria-selected={client.label === activeClient}
             aria-controls="mcp-config-panel"
-            onClick={() => setActiveClient(client)}
+            onClick={() => setActiveClient(client.label)}
             className={cn(
               "relative shrink-0 px-5 py-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-500",
-              client === activeClient
+              client.label === activeClient
                 ? "text-slate-950 dark:text-white"
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200",
             )}
           >
-            {client}
-            {client === activeClient ? (
+            {client.label}
+            {client.label === activeClient ? (
               <motion.span
                 layoutId="mcp-active-tab"
                 className="absolute inset-x-0 bottom-0 h-0.5 bg-orange-500"
@@ -125,20 +125,27 @@ export function McpInstallTabs() {
         ))}
       </div>
       <div id="mcp-config-panel" role="tabpanel" className="p-5 sm:p-8">
-        <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-          Add this server entry to the MCP configuration used by {activeClient}.
-        </p>
+        <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{selected.instruction}</p>
+        {!MCP_RELEASE_AVAILABLE ? (
+          <p className="mb-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
+            Build the server from source first. Replace <code className="font-mono">/absolute/path/to/codeprint</code>{" "}
+            with the full path to your checkout. The npm package is not released yet.
+          </p>
+        ) : null}
         <div className="relative rounded-xl bg-[#0d1117] p-5 pr-16">
-          <pre className="overflow-x-auto font-mono text-sm leading-6 text-slate-200">{MCP_CONFIG}</pre>
+          <pre className="overflow-x-auto font-mono text-sm leading-6 text-slate-200">{selected.config}</pre>
           <CopyButton
-            value={MCP_CONFIG}
+            value={selected.config}
             label="Copy configuration"
             className="absolute right-3 top-3 [&>span]:hidden"
           />
         </div>
         <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-          You can also set <code className="font-mono text-slate-800 dark:text-slate-200">CODEPRINT_OUTPUT_DIR</code> to
-          choose a different local PDF folder.
+          <a href={selected.documentation} target="_blank" rel="noreferrer" className="underline underline-offset-4">
+            {activeClient} setup documentation
+          </a>
+          . You can also set <code className="font-mono text-slate-800 dark:text-slate-200">CODEPRINT_OUTPUT_DIR</code>{" "}
+          to choose a different local PDF folder.
         </p>
       </div>
     </div>

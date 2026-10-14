@@ -41,6 +41,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Codeprint | Code, Markdown, and CSV to PDF",
@@ -113,13 +114,17 @@ export default function RootLayout({
       className={`${mulish.variable} ${merriweather.variable} ${sourceCodePro.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-slate-50 font-sans antialiased dark:bg-[#030712]" suppressHydrationWarning>
+      <body
+        data-clarity-mask="True"
+        className="min-h-screen bg-slate-50 font-sans antialiased dark:bg-[#030712]"
+        suppressHydrationWarning
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster />
         </ThemeProvider>
         <WebSiteJsonLd />
-        <AnalyticsProvider />
+        <AnalyticsProvider googleId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
       </body>
     </html>
   )

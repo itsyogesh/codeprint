@@ -10,12 +10,14 @@ import CodeEditor from "@/components/code-editor"
 import type { PdfPreviewState } from "@/components/pdf/actual-pdf-preview"
 import PrintSettings from "@/components/print-settings"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { useWebMcpDocument } from "@/hooks/use-webmcp-document"
 import { downloadPdfUrl, openPdfPrintDialog } from "@/lib/pdf"
 import { debounce } from "@/lib/utils"
 
@@ -64,6 +66,23 @@ export default function CodePrinterApp({
 
   const debouncedSetCode = useMemo(() => debounce((value: string) => setDebouncedCode(value), 300), [])
   const showPreview = debouncedCode.trim().length > 0
+  const webMcp = useWebMcpDocument({
+    format: "code",
+    preview: pdfState,
+    onAccept: (document) => {
+      setCode(document.content)
+      debouncedSetCode(document.content)
+      setFilename(document.filename)
+      if (document.language) setLanguage(document.language)
+      setIsEditing(false)
+      setPdfState({ blob: null, url: null, pageCount: null, loading: true, error: null })
+      setSettings((current) => ({
+        ...current,
+        pageSize: document.pageSize ?? current.pageSize,
+        orientation: document.orientation ?? current.orientation,
+      }))
+    },
+  })
 
   const handleCodeChange = useCallback(
     (value: string) => {
@@ -153,6 +172,7 @@ export default function CodePrinterApp({
   return (
     <section id="editor-section" aria-label="Code to PDF editor" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16">
       <div className="mx-auto max-w-5xl">
+        <WebMcpReview {...webMcp} />
         {/* Code input section with a fixed minimum height to prevent CLS. */}
         <motion.div
           className="mb-8"

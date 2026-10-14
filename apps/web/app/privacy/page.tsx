@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <StaticContentPage
-      eyebrow="Last updated August 8, 2026"
+      eyebrow="Last updated October 13, 2026"
       title="Privacy without the fine-print fog."
       description="Codeprint is designed so your source material does not need to leave your device."
     >
@@ -21,9 +21,19 @@ export default function PrivacyPage() {
       </ContentSection>
       <ContentSection title="Site analytics">
         <p>
-          We may collect aggregate page and performance measurements, such as which public route was viewed, device
-          category, and loading errors. These measurements help us improve the site and are not intended to identify the
-          contents of your documents.
+          Vercel Analytics and Speed Insights measure site visits and performance without analytics cookies. URLs are
+          reduced to their origin and path, without query strings or fragments. We do not send document text, filenames,
+          settings, preview images, or PDF bytes as analytics events.
+        </p>
+        <p>
+          Google Analytics, when configured, loads only after you allow optional analytics. It measures sanitized page
+          views and can use analytics cookies. Advertising personalization and Google signals are disabled. You can
+          change your choice using Analytics preferences in the footer.
+        </p>
+        <p>
+          Microsoft Clarity session replay is disabled in this release. Enabling it will require a verified separation
+          between public information pages and document tools. Do Not Track and Global Privacy Control disable
+          analytics.
         </p>
       </ContentSection>
       <ContentSection title="Third parties">

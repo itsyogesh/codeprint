@@ -69,11 +69,22 @@ information travels with the bundled WebAssembly executable.
 - Project: [mozilla/pdf.js](https://github.com/mozilla/pdf.js)
 - License: Apache License 2.0
 - Use: The `pdfjs-dist` browser library and worker are distributed through the
-  React-PDF preview surface.
+  React-PDF preview surface and the offline MCP Apps PDF viewer.
 
 PDF.js is Apache-2.0. The two React PDF projects listed above are MIT; they are
 separate projects with different purposes and should not be attributed to the
 PDF.js license.
+
+### MCP Apps SDK
+
+- Project: [modelcontextprotocol/ext-apps](https://github.com/modelcontextprotocol/ext-apps)
+- Use: Negotiates optional, sandboxed PDF previews with compatible MCP clients.
+- License: The installed SDK retains its upstream licensing-transition notice,
+  Apache-2.0 text, and MIT text for contributions that have not been relicensed.
+  Its full `LICENSE` is copied into `@codeprint/mcp` at `dist/licenses/MCP-Apps-LICENSE.txt`.
+
+The MCP package also distributes PDF.js's Apache-2.0 text and the Mulish and
+Merriweather OFL texts alongside the self-contained viewer.
 
 ### pdf-lib
 

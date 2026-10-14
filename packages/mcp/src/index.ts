@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { resolve } from "node:path"
+import { realpathSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { createCodeprintServer } from "./server"
@@ -12,8 +12,16 @@ export async function runCodeprintServer() {
   await server.connect(new StdioServerTransport())
 }
 
-const entrypoint = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : null
-if (entrypoint === import.meta.url) {
+function isEntrypoint() {
+  if (!process.argv[1]) return false
+  try {
+    return pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url
+  } catch {
+    return false
+  }
+}
+
+if (isEntrypoint()) {
   runCodeprintServer().catch((error) => {
     console.error("Codeprint MCP server failed to start:", error)
     process.exitCode = 1
