@@ -8,21 +8,32 @@ export interface CommandResult {
   exitCode: number
 }
 
-export async function runCommand(command: string, args: string[], timeoutMs = 15_000): Promise<CommandResult> {
+export async function runCommand(
+  command: string,
+  args: string[],
+  timeoutMs = 15_000,
+  input?: Uint8Array,
+): Promise<CommandResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { shell: false, stdio: ["ignore", "pipe", "pipe"] })
+    const child = spawn(command, args, { shell: false, stdio: ["pipe", "pipe", "pipe"] })
     const stdout: Buffer[] = []
     const stderr: Buffer[] = []
     let outputBytes = 0
     let settled = false
+    let failure: Error | undefined
+    let killTimeout: ReturnType<typeof setTimeout> | undefined
 
     const timeout = setTimeout(() => {
+      failure = new Error(`${command} timed out after ${timeoutMs} ms.`)
       child.kill("SIGTERM")
-      if (!settled) {
-        settled = true
-        reject(new Error(`${command} timed out after ${timeoutMs} ms.`))
-      }
+      killTimeout = setTimeout(() => child.kill("SIGKILL"), 1_000)
+      killTimeout.unref()
     }, timeoutMs)
+
+    child.stdin.on("error", (error) => {
+      failure ??= new Error(`${command} could not receive the approved PDF: ${error.message}`)
+    })
+    child.stdin.end(input)
 
     const collect = (target: Buffer[]) => (chunk: Buffer) => {
       outputBytes += chunk.byteLength
@@ -33,6 +44,7 @@ export async function runCommand(command: string, args: string[], timeoutMs = 15
     child.stderr.on("data", collect(stderr))
     child.on("error", (error) => {
       clearTimeout(timeout)
+      clearTimeout(killTimeout)
       if (!settled) {
         settled = true
         reject(
@@ -44,6 +56,7 @@ export async function runCommand(command: string, args: string[], timeoutMs = 15
     })
     child.on("close", (exitCode) => {
       clearTimeout(timeout)
+      clearTimeout(killTimeout)
       if (settled) return
       settled = true
       const result = {
@@ -51,7 +64,9 @@ export async function runCommand(command: string, args: string[], timeoutMs = 15
         stderr: Buffer.concat(stderr).toString("utf8").trim(),
         exitCode: exitCode ?? 1,
       }
-      if (outputBytes > MAX_OUTPUT_BYTES) {
+      if (failure) {
+        reject(failure)
+      } else if (outputBytes > MAX_OUTPUT_BYTES) {
         reject(new Error(`${command} produced more than ${MAX_OUTPUT_BYTES} bytes of output.`))
       } else {
         resolve(result)
@@ -60,8 +75,8 @@ export async function runCommand(command: string, args: string[], timeoutMs = 15
   })
 }
 
-export async function runChecked(command: string, args: string[], timeoutMs?: number) {
-  const result = await runCommand(command, args, timeoutMs)
+export async function runChecked(command: string, args: string[], timeoutMs?: number, input?: Uint8Array) {
+  const result = await runCommand(command, args, timeoutMs, input)
   if (result.exitCode !== 0) {
     throw new Error(result.stderr || result.stdout || `${command} exited with status ${result.exitCode}.`)
   }

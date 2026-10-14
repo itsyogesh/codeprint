@@ -36,6 +36,7 @@ export interface PreparedPrintJob {
   expiresAt: string
   pdfPath: string
   fileSizeBytes: number
+  contentSha256: string
   printer: Printer
   options: Required<Omit<PrintOptions, "printerId" | "pageRanges">> & Pick<PrintOptions, "pageRanges">
   summary: string
@@ -61,7 +62,8 @@ export interface PrintBackend {
   readonly name: string
   listPrinters(): Promise<Printer[]>
   getCapabilities(printerId: string): Promise<PrinterCapabilities>
-  submit(pdfPath: string, printer: Printer, options: PreparedPrintJob["options"]): Promise<SubmittedPrintJob>
+  /** Consume the approved PDF bytes before resolving; never reopen the source path. */
+  submit(pdfBytes: Uint8Array, printer: Printer, options: PreparedPrintJob["options"]): Promise<SubmittedPrintJob>
   listJobs(): Promise<PrintJob[]>
   cancelJob(jobId: string): Promise<void>
 }

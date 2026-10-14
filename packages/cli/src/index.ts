@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { basename, extname, join, resolve } from "node:path"
@@ -175,8 +176,8 @@ export function createProgram() {
         pdfPath = await writePdf(rendered, temporaryDirectory)
       }
 
+      const service = createPrintService()
       try {
-        const service = createPrintService()
         const prepared = await service.prepare({
           pdfPath,
           options: {
@@ -197,6 +198,7 @@ export function createProgram() {
         const submitted = await service.submit(prepared.confirmationToken)
         output({ prepared, submitted }, json, `Submitted print job ${submitted.id}.`)
       } finally {
+        service.dispose()
         if (temporaryDirectory) await rm(temporaryDirectory, { recursive: true, force: true })
       }
     })
@@ -245,8 +247,16 @@ export async function main(argv = process.argv) {
   await program.parseAsync(argv)
 }
 
-const entrypoint = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : null
-if (entrypoint === import.meta.url) {
+function isEntrypoint() {
+  if (!process.argv[1]) return false
+  try {
+    return pathToFileURL(realpathSync(process.argv[1])).href === import.meta.url
+  } catch {
+    return false
+  }
+}
+
+if (isEntrypoint()) {
   main().catch((error) => {
     process.stderr.write(`Codeprint: ${error instanceof Error ? error.message : String(error)}\n`)
     process.exitCode = 1

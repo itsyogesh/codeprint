@@ -5,30 +5,29 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: publish-npm-packages
   cancel-in-progress: false
 
 jobs:
-  publish:
+  verify:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: npm
     steps:
       - name: Check out the release commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "24"
-          registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
       - name: Use the supported npm baseline
-        run: npm install --global npm@10.9.4
+        run: npm install --global npm@11.21.0
 
       - name: Install dependencies
         run: npm ci
@@ -39,14 +38,72 @@ jobs:
       - name: Verify packages
         run: npm run release:check
 
+      - name: Test the actual packed release in an isolated consumer
+        run: node scripts/verify-packed-release.mjs "$RUNNER_TEMP/codeprint-release"
+
+      - name: Preserve the tested package files
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: codeprint-release-${{ github.sha }}
+          path: ${{ runner.temp }}/codeprint-release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: verify
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Set up Node.js without installing project dependencies
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Use the supported npm baseline
+        run: npm install --global npm@11.21.0
+
+      - name: Download the tested package files
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: codeprint-release-${{ github.sha }}
+          path: release
+
+      - name: Validate artifact identities and checksums
+        working-directory: release
+        run: |
+          node --input-type=module <<'NODE'
+          import { createHash } from 'node:crypto';
+          import { readFile, readdir } from 'node:fs/promises';
+          const manifest = JSON.parse(await readFile('release-manifest.json', 'utf8'));
+          const names = ['core', 'print', 'cli', 'mcp'];
+          if (manifest.schemaVersion !== 1 || manifest.sourceCommit !== process.env.GITHUB_SHA || manifest.packages.length !== 4) throw Error('Release identity mismatch');
+          const expected = new Set(['release-manifest.json']);
+          for (const [index, pkg] of manifest.packages.entries()) {
+            if (pkg.name !== `@codeprint/${names[index]}` || pkg.filename !== `codeprint-${names[index]}-${pkg.version}.tgz` || !/^\d+\.\d+\.\d+$/.test(pkg.version)) throw Error('Unexpected package identity');
+            const bytes = await readFile(pkg.filename);
+            if (bytes.length !== pkg.sizeBytes || createHash('sha256').update(bytes).digest('hex') !== pkg.sha256) throw Error('Package checksum mismatch');
+            expected.add(pkg.filename);
+          }
+          for (const entry of await readdir('.')) if (!expected.has(entry)) throw Error(`Unexpected artifact: ${entry}`);
+          NODE
+
       - name: Publish core
-        run: npm publish --workspace @codeprint/core --access public --provenance
+        working-directory: release
+        run: npm publish codeprint-core-*.tgz --access public --provenance --ignore-scripts
 
       - name: Publish print service
-        run: npm publish --workspace @codeprint/print --access public --provenance
+        working-directory: release
+        run: npm publish codeprint-print-*.tgz --access public --provenance --ignore-scripts
 
       - name: Publish CLI
-        run: npm publish --workspace @codeprint/cli --access public --provenance
+        working-directory: release
+        run: npm publish codeprint-cli-*.tgz --access public --provenance --ignore-scripts
 
       - name: Publish MCP server
-        run: npm publish --workspace @codeprint/mcp --access public --provenance
+        working-directory: release
+        run: npm publish codeprint-mcp-*.tgz --access public --provenance --ignore-scripts

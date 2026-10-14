@@ -3,13 +3,29 @@ import Link from "next/link"
 import { HeroDescription, HeroHeading } from "@/components/marketing/hero-copy"
 import { Reveal } from "@/components/motion/reveal"
 import { buttonVariants } from "@/components/ui/button"
-import { MCP_RUN_COMMAND, MCP_TOOL_GROUPS, NODE_REQUIREMENT } from "@/lib/developer-surfaces"
+import {
+  MCP_BUILD_COMMAND,
+  MCP_RELEASE_AVAILABLE,
+  MCP_RUN_COMMAND,
+  MCP_TOOL_GROUPS,
+  NODE_REQUIREMENT,
+} from "@/lib/developer-surfaces"
 import { McpInstallTabs } from "./command-demos"
 import { CopyButton } from "./copy-button"
 import { McpHeroIllustration, PrivacyOrbit } from "./hero-illustrations"
 import { ArchitectureDiagram, DeveloperFaq, DeveloperSectionHeading } from "./landing-shared"
 
 const MCP_FAQ = [
+  {
+    question: "Will the PDF preview appear inside my assistant?",
+    answer:
+      "Clients that support MCP Apps can display Codeprint’s offline PDF viewer. Other MCP clients receive a readable PDF resource and a local file path. Tool support alone does not imply inline preview support.",
+  },
+  {
+    question: "Can I add this as a hosted ChatGPT connector?",
+    answer:
+      "This release is a local stdio server, not a public HTTPS connector. A hosted connector would need a separate authenticated service and different privacy guarantees. It must not expose your local printers or files to the internet.",
+  },
   {
     question: "Where do generated PDFs go?",
     answer:
@@ -62,7 +78,7 @@ export function McpLanding() {
               Add to your assistant
             </Link>
             <Link href="#tools" className={buttonVariants({ variant: "outline", size: "lg" })}>
-              See all seven tools
+              See all eight tools
             </Link>
           </Reveal>
           <div className="mt-14">
@@ -93,7 +109,7 @@ export function McpLanding() {
       <section id="tools" className="scroll-mt-24 px-6 py-24">
         <div className="mx-auto max-w-4xl">
           <DeveloperSectionHeading
-            title="Three steps, seven explicit tools"
+            title="Three steps, eight explicit tools"
             description="PDF creation, printer inspection, and physical submission stay separate so the assistant cannot blur a preview into a print action."
           />
           <div className="mt-14 space-y-6">
@@ -137,13 +153,60 @@ export function McpLanding() {
 
       <ArchitectureDiagram active="mcp" />
 
+      <section className="border-y border-slate-200 bg-slate-50/70 px-6 py-24 dark:border-white/[0.06] dark:bg-white/[0.01]">
+        <div className="mx-auto max-w-4xl">
+          <DeveloperSectionHeading
+            title="Read the PDF, right in your conversation"
+            description="The preview uses the exact saved PDF bytes, not a separate HTML approximation. Every paper page is shown in full."
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {[
+              [
+                "Create",
+                "Ask for a reading copy in Markdown, code, JSON, or CSV. Codeprint renders and saves it locally.",
+              ],
+              [
+                "Inspect",
+                "An MCP Apps client can show page navigation and an exact PDF preview. Other clients can read the PDF resource.",
+              ],
+              [
+                "Decide",
+                "Keep the PDF, request changes, or review a prepared print job. Previewing never submits a physical job.",
+              ],
+            ].map(([title, description]) => (
+              <article
+                key={title}
+                className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+              >
+                <h3 className="font-serif text-xl font-bold text-slate-950 dark:text-white">{title}</h3>
+                <p className="mt-3 leading-copy text-slate-600 dark:text-slate-400">{description}</p>
+              </article>
+            ))}
+          </div>
+          <p className="mt-7 text-sm leading-6 text-slate-500 dark:text-slate-400">
+            Preview availability depends on the client’s MCP Apps support. The viewer needs no CDN, analytics script, or
+            Codeprint account. Generated resources stay available for this server session, subject to its memory limit.
+          </p>
+        </div>
+      </section>
+
       <section id="installation" className="mx-auto max-w-4xl scroll-mt-24 px-6 py-24">
         <Reveal>
           <DeveloperSectionHeading
             title="Add Codeprint to your assistant"
-            description={`The MCP server runs locally through npx and requires ${NODE_REQUIREMENT}.`}
+            description={`The MCP server runs locally and requires ${NODE_REQUIREMENT}. ${MCP_RELEASE_AVAILABLE ? "Install the released npm package." : "Build from source while the npm release is being prepared."}`}
           />
         </Reveal>
+        {!MCP_RELEASE_AVAILABLE ? (
+          <div className="relative mt-8 rounded-2xl bg-[#0d1117] p-6 pr-16">
+            <pre className="overflow-x-auto font-mono text-sm leading-6 text-slate-200">{MCP_BUILD_COMMAND}</pre>
+            <CopyButton
+              value={MCP_BUILD_COMMAND}
+              label="Copy build commands"
+              className="absolute right-3 top-3 [&>span]:hidden"
+            />
+          </div>
+        ) : null}
         <Reveal delay={0.2} className="mt-12">
           <McpInstallTabs />
         </Reveal>
@@ -175,9 +238,12 @@ export function McpLanding() {
         />
         <div className="mx-auto mt-8 flex w-fit max-w-full flex-col items-center gap-3 rounded-2xl bg-[#0d1117] p-3 pl-5 sm:flex-row">
           <code className="max-w-full overflow-x-auto whitespace-nowrap font-mono text-sm text-slate-100">
-            {MCP_RUN_COMMAND}
+            {MCP_RELEASE_AVAILABLE ? MCP_RUN_COMMAND : "node packages/mcp/dist/index.js"}
           </code>
-          <CopyButton value={MCP_RUN_COMMAND} label="Copy command" />
+          <CopyButton
+            value={MCP_RELEASE_AVAILABLE ? MCP_RUN_COMMAND : "node packages/mcp/dist/index.js"}
+            label="Copy command"
+          />
         </div>
       </section>
     </>

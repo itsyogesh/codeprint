@@ -7,6 +7,7 @@ import { useCallback, useMemo, useState } from "react"
 import CSVSettingsPanel from "@/components/csv/csv-settings"
 import type { PdfPreviewState } from "@/components/pdf/actual-pdf-preview"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { useWebMcpDocument } from "@/hooks/use-webmcp-document"
 import { downloadPdfUrl, openPdfPrintDialog } from "@/lib/pdf"
 import { debounce } from "@/lib/utils"
 
@@ -103,6 +105,20 @@ export default function CsvPrinterApp() {
   }
 
   const showPreview = debouncedCode.trim().length > 0
+  const webMcp = useWebMcpDocument({
+    format: "csv",
+    preview: pdfState,
+    onAccept: (document) => {
+      handleCodeChange(document.content)
+      setFilename(document.filename)
+      setPdfState({ blob: null, url: null, pageCount: null, loading: true, error: null })
+      setSettings((current) => ({
+        ...current,
+        pageSize: document.pageSize ?? current.pageSize,
+        orientation: document.orientation ?? current.orientation,
+      }))
+    },
+  })
 
   return (
     <section
@@ -111,6 +127,7 @@ export default function CsvPrinterApp() {
       className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16"
     >
       <div className="mx-auto max-w-5xl">
+        <WebMcpReview {...webMcp} />
         {/* Editor */}
         <div className="mb-8">
           <Card className="overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-white/[0.06] dark:bg-white/[0.02]">

@@ -1,8 +1,120 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@theme {
+  --default-ring-width: 3px;
+  --default-ring-color: #3b82f6;
+}
+
+/* Keep the existing focus affordance, including Windows forced-colors support. */
+@utility outline-none {
+  && {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+}
+
+/* Framer and the shared hover rules animate `transform`. Keep transforms in that
+   one property instead of composing Tailwind 4's individual CSS properties. */
+@utility translate-x-* {
+  --legacy-transform-value: --value(ratio, number, "px", "full", [*]);
+  && {
+    translate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility -translate-x-* {
+  --legacy-transform-value: --value(ratio, number, "px", "full", [*]);
+  && {
+    translate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility translate-y-* {
+  --legacy-transform-value: --value(ratio, number, "px", "full", [*]);
+  && {
+    translate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility -translate-y-* {
+  --legacy-transform-value: --value(ratio, number, "px", "full", [*]);
+  && {
+    translate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility rotate-* {
+  --legacy-rotate: calc(--value(number) * 1deg);
+  --legacy-rotate: --value([angle]);
+
+  && {
+    rotate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility -rotate-* {
+  --legacy-rotate: calc(--value(number) * -1deg);
+  --legacy-rotate: calc(--value([angle]) * -1);
+
+  && {
+    rotate: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility scale-* {
+  --legacy-transform-value: --value(number, percentage, [*]);
+  && {
+    scale: none;
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--legacy-rotate, 0deg))
+      scale(var(--tw-scale-x, 1), var(--tw-scale-y, 1));
+  }
+}
+
+@utility transform-none {
+  && {
+    translate: none;
+    rotate: none;
+    scale: none;
+    transform: none;
+  }
+}
 
 @layer base {
+  *,
+  ::before,
+  ::after,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: hsl(var(--border));
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  dialog {
+    margin: auto;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;

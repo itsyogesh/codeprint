@@ -119,15 +119,20 @@ export class CupsPrintBackend implements PrintBackend {
     }
   }
 
-  async submit(pdfPath: string, printer: Printer, options: PreparedPrintJob["options"]): Promise<SubmittedPrintJob> {
+  async submit(
+    pdfBytes: Uint8Array,
+    printer: Printer,
+    options: PreparedPrintJob["options"],
+  ): Promise<SubmittedPrintJob> {
+    if (!/^[A-Za-z0-9_][A-Za-z0-9_.-]*$/.test(printer.id)) throw new Error("Invalid CUPS printer ID.")
     const args = ["-d", printer.id, "-n", String(options.copies), "-o", `media=${PAGE_SIZE_OPTIONS[options.pageSize]}`]
     args.push("-o", `sides=${options.duplex}`)
     if (options.color === "monochrome") args.push("-o", "print-color-mode=monochrome")
     if (options.color === "color") args.push("-o", "print-color-mode=color")
     if (options.pageRanges) args.push("-P", options.pageRanges)
-    args.push(pdfPath)
+    args.push("--", "-")
 
-    const { stdout } = await runChecked("lp", args, 30_000)
+    const { stdout } = await runChecked("lp", args, 30_000, pdfBytes)
     const id = stdout.match(/request id is\s+(\S+)/i)?.[1]
     if (!id) throw new Error(`CUPS accepted the command but did not return a print job ID: ${stdout}`)
     return { id, printerId: printer.id, submittedAt: new Date().toISOString(), rawOutput: stdout }
@@ -142,6 +147,7 @@ export class CupsPrintBackend implements PrintBackend {
   }
 
   async cancelJob(jobId: string) {
+    if (!/^[A-Za-z0-9_][A-Za-z0-9_.-]*-[1-9]\d*$/.test(jobId)) throw new Error("Invalid CUPS print job ID.")
     await runChecked("cancel", [jobId])
   }
 }

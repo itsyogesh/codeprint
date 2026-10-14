@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react"
 import MarkdownPdfPreview, { type MarkdownPdfState } from "@/components/markdown/markdown-pdf-preview"
 import MarkdownSettingsPanel from "@/components/markdown/markdown-settings"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -13,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { useWebMcpDocument } from "@/hooks/use-webmcp-document"
 import { downloadPdfUrl, openPdfPrintDialog } from "@/lib/pdf"
 import { debounce } from "@/lib/utils"
 
@@ -124,6 +126,20 @@ export default function MarkdownPrinterApp() {
   }
 
   const showPreview = debouncedContent.trim().length > 0
+  const webMcp = useWebMcpDocument({
+    format: "markdown",
+    preview: pdfState,
+    onAccept: (document) => {
+      handleContentChange(document.content)
+      setFilename(document.filename)
+      setPdfState({ blob: null, url: null, pageCount: null, loading: true, error: null })
+      setSettings((current) => ({
+        ...current,
+        pageSize: document.pageSize ?? current.pageSize,
+        orientation: document.orientation ?? current.orientation,
+      }))
+    },
+  })
 
   return (
     <section
@@ -132,6 +148,7 @@ export default function MarkdownPrinterApp() {
       className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16"
     >
       <div className="mx-auto max-w-5xl">
+        <WebMcpReview {...webMcp} />
         {/* Editor Section */}
         <div className="mb-8">
           <Card className="overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-white/[0.06] dark:bg-white/[0.02]">

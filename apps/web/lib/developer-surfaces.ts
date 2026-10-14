@@ -5,6 +5,17 @@ export const NODE_REQUIREMENT = "Node.js 22.12 or newer"
 export const CLI_INSTALL_COMMAND = `npm install --global ${CLI_PACKAGE_NAME}`
 export const CLI_RUN_COMMAND = `npx ${CLI_PACKAGE_NAME} render README.md`
 export const MCP_RUN_COMMAND = `npx -y ${MCP_PACKAGE_NAME}`
+export const MCP_RELEASE_AVAILABLE = process.env.NEXT_PUBLIC_MCP_RELEASE_AVAILABLE === "true"
+export const MCP_BUILD_COMMAND =
+  "git clone https://github.com/itsyogesh/codeprint.git\ncd codeprint\nnpm ci\nnpm run build -w @codeprint/core\nnpm run build -w @codeprint/print\nnpm run build -w @codeprint/mcp"
+export const MCP_SOURCE_CONFIG = `{
+  "mcpServers": {
+    "codeprint": {
+      "command": "node",
+      "args": ["/absolute/path/to/codeprint/packages/mcp/dist/index.js"]
+    }
+  }
+}`
 
 export const MCP_CONFIG = `{
   "mcpServers": {
@@ -14,6 +25,68 @@ export const MCP_CONFIG = `{
     }
   }
 }`
+
+export const MCP_CLIENTS = [
+  {
+    label: "Claude Desktop",
+    config: MCP_CONFIG,
+    instruction:
+      "In Claude Desktop, open Settings → Developer → Edit Config. Add this entry, save, and restart Claude.",
+    documentation: "https://modelcontextprotocol.io/quickstart/user",
+  },
+  {
+    label: "Claude Code",
+    config: "claude mcp add --transport stdio codeprint -- npx -y @codeprint/mcp",
+    instruction: "Run this command in your terminal, then use /mcp in Claude Code to check the connection.",
+    documentation: "https://code.claude.com/docs/en/mcp",
+  },
+  {
+    label: "Cursor",
+    config: MCP_CONFIG,
+    instruction: "Add this to .cursor/mcp.json in your project (or your global Cursor MCP configuration).",
+    documentation: "https://docs.cursor.com/context/model-context-protocol",
+  },
+  {
+    label: "VS Code",
+    config: `{
+  "servers": {
+    "codeprint": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@codeprint/mcp"]
+    }
+  }
+}`,
+    instruction: "Save this in .vscode/mcp.json, then start the server from VS Code’s MCP server controls.",
+    documentation: "https://code.visualstudio.com/docs/agents/reference/mcp-configuration",
+  },
+  {
+    label: "Codex",
+    config: "codex mcp add codeprint -- npx -y @codeprint/mcp",
+    instruction: "Run this command in your terminal. Codex saves the server in its shared MCP configuration.",
+    documentation: "https://developers.openai.com/codex/mcp",
+  },
+] as const
+
+export const MCP_SOURCE_CLIENTS = MCP_CLIENTS.map((client) => ({
+  ...client,
+  config:
+    client.label === "Codex"
+      ? "codex mcp add codeprint -- node /absolute/path/to/codeprint/packages/mcp/dist/index.js"
+      : client.label === "Claude Code"
+        ? "claude mcp add --transport stdio codeprint -- node /absolute/path/to/codeprint/packages/mcp/dist/index.js"
+        : client.label === "VS Code"
+          ? `{
+  "servers": {
+    "codeprint": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/absolute/path/to/codeprint/packages/mcp/dist/index.js"]
+    }
+  }
+}`
+          : MCP_SOURCE_CONFIG,
+}))
 
 export const CLI_COMMANDS = [
   {
@@ -74,7 +147,7 @@ export const MCP_TOOL_GROUPS = [
     title: "Create the reading copy",
     description:
       "The assistant passes Markdown, code, JSON, or CSV to the local renderer. The PDF is saved without overwriting an existing file.",
-    tools: ["create_printable_pdf"],
+    tools: ["create_printable_pdf", "preview_pdf"],
   },
   {
     title: "Inspect the local printer",

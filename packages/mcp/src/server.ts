@@ -1,9 +1,11 @@
 import type { CreatePrintablePdfInput } from "@codeprint/core"
 import { renderPrintablePdf } from "@codeprint/core/render"
 import { createPrintService, type PrintService } from "@codeprint/print"
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
+import { DocumentStore } from "./documents"
 import { getOutputDirectory, writeRenderedPdf } from "./output"
+import { registerPreview } from "./preview-resource"
 
 const formatSchema = z.enum(["markdown", "code", "csv"])
 const pageSizeSchema = z.enum(["a4", "letter", "legal"])
@@ -27,6 +29,7 @@ const documentInputSchema = {
   colorized: z.boolean().optional(),
   hasHeaderRow: z.boolean().optional(),
   alternatingColors: z.boolean().optional(),
+  columns: z.union([z.literal(1), z.literal(2)]).optional(),
 }
 
 const printerSchema = z.object({
@@ -61,6 +64,7 @@ function errorResult(action: string, error: unknown) {
 export function createCodeprintServer(options: CodeprintServerOptions = {}) {
   const outputDirectory = options.outputDirectory ?? getOutputDirectory()
   const printService = options.printService ?? createPrintService()
+  const documents = new DocumentStore()
   const server = new McpServer(
     { name: "codeprint", version: "0.1.0" },
     {
@@ -68,6 +72,9 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
         "Use Codeprint to create local PDFs from Markdown, source code, JSON, or CSV. Physical printing is a separate two-step flow: prepare_print_job returns the exact settings, then submit_print_job may only be called after the user explicitly approves those settings.",
     },
   )
+
+  // Clear pending PDF snapshots on client disconnect, including stdio EOF.
+  server.server.onclose = () => printService.dispose()
 
   server.registerResource(
     "codeprint-defaults",
@@ -92,7 +99,23 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
     }),
   )
 
-  server.registerTool(
+  server.registerResource(
+    "codeprint-document",
+    new ResourceTemplate("codeprint://documents/{documentId}", {
+      list: async () => ({ resources: documents.list() }),
+    }),
+    { title: "Generated Codeprint PDFs", mimeType: "application/pdf" },
+    async (uri, { documentId }) => {
+      const document = documents.get(String(documentId))
+      return {
+        contents: [
+          { uri: uri.href, mimeType: "application/pdf", blob: Buffer.from(document.bytes).toString("base64") },
+        ],
+      }
+    },
+  )
+
+  const createTool = server.registerTool(
     "create_printable_pdf",
     {
       title: "Create a printable Codeprint PDF",
@@ -104,6 +127,8 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
         format: formatSchema,
         pages: z.number().int().positive(),
         sizeBytes: z.number().int().nonnegative(),
+        documentId: z.string().uuid(),
+        resourceUri: z.string(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
@@ -111,12 +136,13 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
       try {
         const rendered = await renderPrintablePdf(input as CreatePrintablePdfInput)
         const result = await writeRenderedPdf(rendered, outputDirectory)
+        const preview = documents.add(rendered)
         return {
           content: [
             { type: "text" as const, text: `Created a ${result.pages}-page PDF at ${result.path}` },
             {
               type: "resource_link" as const,
-              uri: result.uri,
+              uri: preview.resourceUri,
               name: result.path.split("/").pop() || "Codeprint PDF",
               title: "Open the Codeprint PDF",
               description: `${result.pages}-page printable ${result.format} document`,
@@ -124,13 +150,45 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
               size: result.sizeBytes,
             },
           ],
-          structuredContent: result,
+          structuredContent: { ...result, ...preview },
         }
       } catch (error) {
         return errorResult("create the PDF", error)
       }
     },
   )
+
+  const previewTool = server.registerTool(
+    "preview_pdf",
+    {
+      title: "Preview a generated PDF",
+      description:
+        "Reopen a PDF created in this server session. Returns a readable PDF resource; clients supporting MCP Apps also show an inline viewer. Does not print.",
+      inputSchema: { documentId: z.string().uuid() },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    async ({ documentId }) => {
+      try {
+        const document = documents.get(documentId)
+        const resourceUri = `codeprint://documents/${documentId}`
+        return {
+          content: [
+            {
+              type: "resource_link" as const,
+              uri: resourceUri,
+              name: document.filename,
+              mimeType: "application/pdf",
+              size: document.bytes.byteLength,
+            },
+          ],
+          structuredContent: { documentId, resourceUri, pages: document.pages, sizeBytes: document.bytes.byteLength },
+        }
+      } catch (error) {
+        return errorResult("preview the PDF", error)
+      }
+    },
+  )
+  registerPreview(server, [createTool, previewTool])
 
   server.registerTool(
     "list_printers",
@@ -208,6 +266,7 @@ export function createCodeprintServer(options: CodeprintServerOptions = {}) {
         expiresAt: z.string(),
         pdfPath: z.string(),
         fileSizeBytes: z.number().int().nonnegative(),
+        contentSha256: z.string().regex(/^[a-f0-9]{64}$/),
         printer: printerSchema,
         options: printOptionsSchema,
         summary: z.string(),

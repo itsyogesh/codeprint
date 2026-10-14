@@ -3,6 +3,7 @@ import Link from "next/link"
 import { CodeprintLogo } from "@/components/brand/codeprint-logo"
 import { SHOW_DEVELOPER_TOOLS } from "@/lib/features"
 import { getLanguagesForDisplay } from "@/lib/languages"
+import { AnalyticsPreferences } from "./analytics-preferences"
 
 const LANGUAGES = getLanguagesForDisplay()
 const FEATURED_LANGUAGE_SLUGS = ["python", "javascript", "typescript", "java", "go", "rust", "cpp", "c"]
@@ -98,7 +99,9 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <FooterColumn title="Company" links={COMPANY_LINKS} />
+        <FooterColumn title="Company" links={COMPANY_LINKS}>
+          <AnalyticsPreferences />
+        </FooterColumn>
       </div>
 
       <div className="border-t border-slate-200 px-6 py-6 dark:border-white/[0.06]">
@@ -111,7 +114,15 @@ export function SiteFooter() {
   )
 }
 
-function FooterColumn({ title, links }: { title: string; links: { href: string; label: string }[] }) {
+function FooterColumn({
+  title,
+  links,
+  children,
+}: {
+  title: string
+  links: { href: string; label: string }[]
+  children?: React.ReactNode
+}) {
   return (
     <div className="flex flex-col">
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -123,6 +134,7 @@ function FooterColumn({ title, links }: { title: string; links: { href: string; 
             {link.label}
           </Link>
         ))}
+        {children}
       </div>
     </div>
   )
