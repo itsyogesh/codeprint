@@ -6,6 +6,17 @@ import { absoluteUrl, SITE_URL } from "@/lib/site"
 
 const LAST_CONTENT_UPDATE = new Date("2026-08-11T00:00:00.000Z")
 
+// Next's metadata serializer inserts URLs verbatim. Escape only at this XML
+// boundary, leaving the shared URL helpers unchanged for HTML metadata.
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const languagePages = getAllLanguageSlugs().map((slug) => ({
     url: absoluteUrl(`/${slug}`),
@@ -15,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     images: [ogImageUrl("language", { language: slug })],
   }))
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
       lastModified: LAST_CONTENT_UPDATE,
@@ -70,4 +81,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: path === "blog" ? 0.6 : 0.4,
     })),
   ]
+
+  return entries.map((entry) => ({
+    ...entry,
+    url: escapeXml(entry.url),
+    ...(entry.images ? { images: entry.images.map(escapeXml) } : {}),
+  }))
 }
