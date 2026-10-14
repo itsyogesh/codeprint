@@ -2,10 +2,36 @@
 
 Local MCP server for Codeprint PDF creation and confirmed physical printing.
 
+## Installation
+
+Use Node.js 22.12 or newer. No repository checkout or global install is needed.
+For Claude Desktop or Cursor, add this server to the client's MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "codeprint": {
+      "command": "npx",
+      "args": ["-y", "@codeprint/mcp"]
+    }
+  }
+}
+```
+
+Restart or reconnect the client after saving. PDFs are saved to
+`~/Downloads/Codeprint` by default. Set `CODEPRINT_OUTPUT_DIR` in the server's
+`env` object to choose a different absolute output directory. Keep the client's
+per-tool approval controls enabled, especially for physical printing.
+
+For VS Code, use `.vscode/mcp.json` with a `servers` key instead of `mcpServers`
+and add `"type": "stdio"` to the server entry.
+
+Keep the server local. It uses stdio, not a public HTTP endpoint, and does not
+need a Codeprint account, API key, database, or cloud storage.
+
 ## Build from source
 
-The npm package is not released yet. Use Node.js 22.12 or newer and build the
-workspace from the repository root:
+For development, build the workspace from the repository root:
 
 ```bash
 npm ci
@@ -13,9 +39,6 @@ npm run build -w @codeprint/core
 npm run build -w @codeprint/print
 npm run build -w @codeprint/mcp
 ```
-
-Keep the server local. This package uses stdio, not a public HTTP endpoint.
-It does not need a Codeprint account, API key, database, or cloud storage.
 
 ## Client configuration from source
 
@@ -56,9 +79,9 @@ codex mcp add codeprint -- node /absolute/path/to/codeprint/packages/mcp/dist/in
 claude mcp add --transport stdio codeprint -- node /absolute/path/to/codeprint/packages/mcp/dist/index.js
 ```
 
-Restart or reconnect the client after configuration. Once the package is
-published, replace the `node` command and absolute path with `npx` and
-`["-y", "@codeprint/mcp"]`. Do not use that command before publication.
+Restart or reconnect the client after configuration. The source configurations
+above are for local development; use the npm configuration under Installation
+for the published release.
 
 ## PDF tools
 
