@@ -48,7 +48,14 @@ describe("MCP physical-print approval boundary", () => {
     try {
       const prepared = await f.client.callTool({ name: "prepare_print_job", arguments: { pdfPath: f.pdfPath } })
       expect(prepared.isError).not.toBe(true)
-      const receipt = prepared.structuredContent as { confirmationToken: string; contentSha256: string }
+      const text = prepared.content as Array<{ type: string; text?: string }>
+      const receipt = JSON.parse(text.find((block) => block.type === "text" && block.text?.startsWith("{"))!.text!) as {
+        confirmationToken: string
+        contentSha256: string
+        expiresAt: string
+      }
+      expect(receipt).toEqual(prepared.structuredContent)
+      expect(Date.parse(receipt.expiresAt)).toBeGreaterThan(Date.now())
       expect(receipt.contentSha256).toBe(createHash("sha256").update(f.bytes).digest("hex"))
       expect(f.backend.submit).not.toHaveBeenCalled()
       const submitted = await f.client.callTool({
