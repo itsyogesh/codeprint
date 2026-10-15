@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest"
-import { takeTransferredSource, transferSource } from "@/lib/source-transfer"
+import { sourceEditorAnchor, takeTransferredSource, transferSource } from "@/lib/source-transfer"
 
 const source = {
   content: "# Reading copy",
@@ -15,6 +15,13 @@ afterEach(() => {
 })
 
 describe("reviewed source handoff", () => {
+  it.each([
+    ["code", "editor-section"],
+    ["markdown", "md-editor-section"],
+    ["csv", "csv-editor-section"],
+  ] as const)("lands in the %s editor", (format, anchor) => {
+    expect(sourceEditorAnchor(format)).toBe(anchor)
+  })
   it("keeps content out of URLs and consumes the tab-local document once", () => {
     expect(transferSource(source)).toBe("/markdown#imported-file")
     window.history.replaceState(null, "", "/markdown#imported-file")

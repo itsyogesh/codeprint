@@ -247,9 +247,15 @@ async function consumerTests(consumer, tarballs) {
     run(process.execPath, [cli, "render", "--url", "https://127.0.0.1/private.py"], { cwd: consumer }),
     /private-network/,
   )
-  const sourceModule = await import(pathToFileURL(consumerRequire.resolve("@codeprint/core/source")).href)
-  assert.equal(sourceModule.sourceType("main.py").language, "python")
-  assert.equal(sourceModule.isPublicAddress("127.0.0.1"), false)
+  await run(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      'import assert from "node:assert/strict"; import {sourceType,isPublicAddress} from "@codeprint/core/source"; assert.equal(sourceType("main.py").language,"python"); assert.equal(isPublicAddress("127.0.0.1"),false);',
+    ],
+    { cwd: consumer },
+  )
   const { Client } = await import(
     pathToFileURL(consumerRequire.resolve("@modelcontextprotocol/sdk/client/index.js")).href
   )

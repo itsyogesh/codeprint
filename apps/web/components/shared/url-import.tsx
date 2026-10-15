@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { takeTransferredSource, transferSource } from "@/lib/source-transfer"
+import { sourceEditorAnchor, takeTransferredSource, transferSource } from "@/lib/source-transfer"
 
 export function UrlImport({
   onImport,
@@ -36,8 +36,11 @@ export function UrlImport({
       const source = takeTransferredSource(format)
       if (source) {
         onImportRef.current(source)
-        window.history.replaceState(null, "", "#editor-section")
-        document.getElementById("editor-section")?.scrollIntoView()
+        const anchor = sourceEditorAnchor(format)
+        window.history.replaceState(null, "", `#${anchor}`)
+        const editor = document.getElementById(anchor)
+        editor?.scrollIntoView()
+        editor?.querySelector("textarea")?.focus({ preventScroll: true })
       }
     } catch {
       setError("The browser could not restore the imported file. Import its URL again here.")

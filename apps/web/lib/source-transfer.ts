@@ -2,6 +2,10 @@ import { type ImportedSource, SOURCE_MAX_BYTES } from "@codeprint/core/source"
 
 const KEY = "codeprint:reviewed-url-import"
 
+export function sourceEditorAnchor(format: ImportedSource["format"]): string {
+  return format === "markdown" ? "md-editor-section" : format === "csv" ? "csv-editor-section" : "editor-section"
+}
+
 // One-shot tab-local handoff after explicit review. Source text and URLs never
 // go into navigation URLs and the handoff is removed as soon as it is read.
 export function transferSource(source: ImportedSource): string {
