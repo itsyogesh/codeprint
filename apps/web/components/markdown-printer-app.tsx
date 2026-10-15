@@ -5,11 +5,13 @@ import { Download, FileText, Printer, Settings2, Upload } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 import MarkdownPdfPreview, { type MarkdownPdfState } from "@/components/markdown/markdown-pdf-preview"
 import MarkdownSettingsPanel from "@/components/markdown/markdown-settings"
+import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
+import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -152,19 +154,9 @@ export default function MarkdownPrinterApp() {
         {/* Editor Section */}
         <div className="mb-8">
           <Card className="overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-white/[0.06] dark:bg-white/[0.02]">
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.01]">
-              <div className="flex gap-2" aria-hidden="true">
-                <span className="h-3 w-3 rounded-full bg-red-500/80" />
-                <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                <span className="h-3 w-3 rounded-full bg-green-500/80" />
-              </div>
-              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{filename || "untitled.md"}</span>
-              <span className="rounded border border-orange-500/20 bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-orange-500/80">
-                MARKDOWN
-              </span>
-            </div>
+            <EditorWindowBar filename={filename || "untitled.md"} mode="MARKDOWN" />
 
-            <div className="space-y-4 p-6">
+            <div className="space-y-4 p-4 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-orange-500" />
@@ -223,7 +215,7 @@ export default function MarkdownPrinterApp() {
         {/* Preview Section */}
         {showPreview && (
           <div>
-            <Card className="rounded-2xl border-slate-200 bg-white p-6 shadow-xl dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <Card className="rounded-2xl border-slate-200 bg-white p-4 shadow-xl sm:p-6 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 font-serif text-xl font-bold">Preview</h2>
 
@@ -235,13 +227,9 @@ export default function MarkdownPrinterApp() {
                         Settings
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      sideOffset={8}
-                      className="max-h-[min(72vh,640px)] w-[90vw] max-w-96 overflow-y-auto p-4 sm:w-96"
-                    >
+                    <EditorSettingsContent>
                       <MarkdownSettingsPanel settings={settings} setSettings={setSettings} />
-                    </DropdownMenuContent>
+                    </EditorSettingsContent>
                   </DropdownMenu>
 
                   <Button

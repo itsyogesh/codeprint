@@ -130,7 +130,7 @@ export default function MarkdownSettingsPanel({ settings, setSettings }: Markdow
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <div className="relative w-16">
+            <div className="relative w-20 shrink-0">
               <Input
                 id="fontSize"
                 type="number"
@@ -138,7 +138,7 @@ export default function MarkdownSettingsPanel({ settings, setSettings }: Markdow
                 max={24}
                 value={settings.fontSize}
                 onChange={(event) => handleChange("fontSize", Number.parseInt(event.target.value, 10) || 14)}
-                className="h-8 pr-6 text-center text-xs tabular-nums"
+                className="h-8 pl-2 pr-6 text-center text-xs tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500">
                 px

@@ -9,11 +9,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import CodeEditor from "@/components/code-editor"
 import type { PdfPreviewState } from "@/components/pdf/actual-pdf-preview"
 import PrintSettings from "@/components/print-settings"
+import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
+import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
@@ -182,19 +184,9 @@ export default function CodePrinterApp({
           transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.25, 0.8, 0.25, 1] }}
         >
           <Card className="min-h-[200px] overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-white/[0.06] dark:bg-white/[0.02]">
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.01]">
-              <div className="flex gap-2" aria-hidden="true">
-                <span className="h-3 w-3 rounded-full bg-red-500/80" />
-                <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                <span className="h-3 w-3 rounded-full bg-green-500/80" />
-              </div>
-              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{filename || "untitled"}</span>
-              <span className="rounded border border-orange-500/20 bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-orange-500/80">
-                EDITOR MODE
-              </span>
-            </div>
-            <div className="p-6">
-              <div className="mb-6 flex items-center justify-between">
+            <EditorWindowBar filename={filename || "untitled"} mode="EDITOR MODE" />
+            <div className="p-4 sm:p-6">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <FileCode2 className="h-5 w-5 text-orange-500" />
                   <h2 className="font-serif text-xl font-bold">Code input</h2>
@@ -280,12 +272,16 @@ export default function CodePrinterApp({
                     transition={{ duration: 0.2 }}
                   >
                     <div className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-orange-500" />
-                        <span className="font-medium">{filename}</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {code.split("\n").length} lines &bull; {code.length} characters
-                        </span>
+                      <div className="flex min-w-0 items-start gap-2">
+                        <div className="mt-1.5 h-3 w-3 shrink-0 rounded-full bg-orange-500" />
+                        <div className="min-w-0">
+                          <span className="block truncate font-medium" title={filename}>
+                            {filename}
+                          </span>
+                          <span className="block text-xs text-slate-500 dark:text-slate-400">
+                            {code.split("\n").length} lines &bull; {code.length} characters
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -324,7 +320,7 @@ export default function CodePrinterApp({
             animate={{ opacity: 1, transform: "translateY(0px)" }}
             transition={{ duration: reduceMotion ? 0 : 0.3, ease: [0.23, 1, 0.32, 1] }}
           >
-            <Card className="rounded-2xl border-slate-200 bg-white p-6 shadow-xl dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <Card className="rounded-2xl border-slate-200 bg-white p-4 shadow-xl sm:p-6 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="flex flex-wrap justify-between items-center mb-6 gap-2">
                 <h2 className="text-xl font-semibold flex items-center gap-2">Preview</h2>
 
@@ -336,9 +332,9 @@ export default function CodePrinterApp({
                         Settings
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[90vw] sm:w-96 max-w-96 p-4">
+                    <EditorSettingsContent>
                       <PrintSettings settings={settings} setSettings={setSettings} />
-                    </DropdownMenuContent>
+                    </EditorSettingsContent>
                   </DropdownMenu>
 
                   <Button

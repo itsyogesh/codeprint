@@ -88,6 +88,25 @@ describe("PdfPageCanvas", () => {
     )
 
     expect(reactPdf.pageProps).toHaveBeenCalledWith(expect.objectContaining({ scale: 1.25 }))
+    expect(reactPdf.documentProps).toHaveBeenCalledWith(expect.objectContaining({ className: "mx-auto shrink-0" }))
+  })
+
+  it.each([120, 194, 218, 272])("fits a %ipx phone preview without imposing a wider PDF page", async (width) => {
+    const rect = HTMLElement.prototype.getBoundingClientRect()
+    vi.mocked(HTMLElement.prototype.getBoundingClientRect).mockReturnValue({ ...rect, width })
+    const { container } = render(
+      <PdfPageCanvas
+        url="blob:http://localhost/mobile-pdf"
+        pageNumber={1}
+        zoom="page-width"
+        filename="mobile.md"
+        onDocumentLoad={vi.fn()}
+        onError={vi.fn()}
+      />,
+    )
+    await waitFor(() => expect(reactPdf.pageProps).toHaveBeenCalledWith(expect.objectContaining({ width })))
+    expect(container.querySelector("[data-pdf-page-container]")).toHaveClass("w-full")
+    expect(container.querySelector("[data-pdf-page-container]")).not.toHaveClass("justify-center")
   })
 
   it("configures a bundled local PDF.js worker", () => {
