@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <StaticContentPage
-      eyebrow="Last updated October 13, 2026"
+      eyebrow="Last updated October 15, 2026"
       title="Privacy without the fine-print fog."
       description="Codeprint is designed so your source material does not need to leave your device."
     >
@@ -17,6 +17,18 @@ export default function PrivacyPage() {
         <p>
           Code, Markdown, CSV data, filenames, preview settings, and generated PDF content are processed locally in your
           browser. Codeprint does not upload, store, sell, or use that content to train models.
+        </p>
+      </ContentSection>
+      <ContentSection title="Importing a public file URL">
+        <p>
+          URL imports contact the source host directly from your browser, without forwarding cookies or a referrer.
+          GitHub file links use GitHub’s public content API. The source host can see the request and your IP address.
+          Codeprint does not proxy, upload, or store the fetched file on its servers. PDF rendering stays local.
+        </p>
+        <p>
+          You review the fetched file before using it. If you choose a different editor, a one-shot copy is passed
+          through tab-local session storage and removed when read, with a one-minute expiry. Source URLs and document
+          content are not included in analytics events or navigation URLs. Private repositories are not supported.
         </p>
       </ContentSection>
       <ContentSection title="Site analytics">

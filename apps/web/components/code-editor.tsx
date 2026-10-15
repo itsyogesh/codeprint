@@ -13,6 +13,7 @@ interface CodeEditorProps {
 }
 
 const languages = [
+  { value: "plaintext", label: "Plain text" },
   { value: "javascript", label: "JavaScript" },
   { value: "typescript", label: "TypeScript" },
   { value: "python", label: "Python" },
@@ -27,6 +28,7 @@ const languages = [
   { value: "swift", label: "Swift" },
   { value: "kotlin", label: "Kotlin" },
   { value: "html", label: "HTML" },
+  { value: "xml", label: "XML" },
   { value: "css", label: "CSS" },
   { value: "sql", label: "SQL" },
   { value: "shell", label: "Shell/Bash" },

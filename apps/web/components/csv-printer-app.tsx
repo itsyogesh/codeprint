@@ -9,6 +9,7 @@ import type { PdfPreviewState } from "@/components/pdf/actual-pdf-preview"
 import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
 import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { UrlImport } from "@/components/shared/url-import"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -178,6 +179,14 @@ export default function CsvPrinterApp() {
                         </Button>
                       </div>
                     </div>
+                    <UrlImport
+                      format="csv"
+                      hasContent={Boolean(code.trim())}
+                      onImport={(source) => {
+                        handleCodeChange(source.content)
+                        setFilename(source.filename)
+                      }}
+                    />
                     <Textarea
                       placeholder={`Name,Age,Email\nJohn Doe,30,john@example.com\nJane Smith,25,jane@example.com`}
                       value={code}

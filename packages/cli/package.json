@@ -1,6 +1,6 @@
 {
   "name": "@codeprint/cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Render and print code, Markdown, and CSV from the terminal.",
   "keywords": [
     "codeprint",
@@ -44,8 +44,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@codeprint/core": "0.1.1",
-    "@codeprint/print": "0.1.1",
+    "@codeprint/core": "0.2.0",
+    "@codeprint/print": "0.2.0",
     "commander": "^15.0.0",
     "react": "^19"
   },

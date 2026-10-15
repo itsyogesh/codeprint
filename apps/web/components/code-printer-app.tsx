@@ -12,6 +12,7 @@ import PrintSettings from "@/components/print-settings"
 import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
 import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { UrlImport } from "@/components/shared/url-import"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -258,6 +259,15 @@ export default function CodePrinterApp({
                               Upload
                             </Button>
                           </div>
+                          <UrlImport
+                            format="code"
+                            hasContent={Boolean(code.trim())}
+                            onImport={(source) => {
+                              handleCodeChange(source.content)
+                              setFilename(source.filename)
+                              setLanguage(source.language)
+                            }}
+                          />
                           <CodeEditor code={code} setCode={handleCodeChange} language={language} />
                         </div>
                       )}

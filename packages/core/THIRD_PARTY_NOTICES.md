@@ -42,6 +42,10 @@ this core package.
 
 ## PDF and text processing
 
+- [ipaddr.js](https://github.com/whitequark/ipaddr.js), MIT: IP address parsing
+  and public-network validation for source imports. Upstream license text is
+  included in its dependency distribution.
+
 - [pdf-lib](https://github.com/Hopding/pdf-lib), copyright 2019 Andrew
   Dillon, MIT: PDF assembly and metadata operations.
 - [highlight.js](https://github.com/highlightjs/highlight.js), copyright

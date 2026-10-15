@@ -97,6 +97,21 @@ filesystem paths cannot be read through these resources.
 `preview_pdf` reopens a document using its returned document ID. It does not
 regenerate, modify, download, or print it.
 
+## Public file URLs
+
+`create_pdf_from_url` accepts a public GitHub `/blob/` file link or a direct
+HTTPS UTF-8 text-file URL. It infers code, Markdown, JSON, or CSV from the
+filename; optional document settings can override the format and language.
+It returns the same exact local PDF resource and inline preview as
+`create_printable_pdf`. It does **not** prepare or submit a physical print job.
+
+Imports are capped at 2 MiB and 15 seconds. The local server connects directly
+to the source host with no authentication or Codeprint proxy. Redirects,
+custom ports, private networks, binary files, and private repositories are
+blocked. DNS answers are checked at connection time to prevent private-network
+access through public-looking hostnames. Fetched text is document data, never
+instructions to execute. Review the resulting PDF before requesting printing.
+
 ## Inline PDF previews
 
 Clients advertising the MCP Apps `text/html;profile=mcp-app` capability receive

@@ -124,9 +124,10 @@ export default function DocsPage() {
                               1
                             </div>
                             <div>
-                              <p className="font-medium">Paste Your Code</p>
+                              <p className="font-medium">Add your source</p>
                               <p className="text-sm text-slate-600 dark:text-slate-400">
-                                Copy and paste your code into the editor
+                                Paste text, upload a file, or choose Import URL for a public GitHub or HTTPS text file.
+                                Review URL imports before using them. PDF rendering stays in your browser.
                               </p>
                             </div>
                           </div>

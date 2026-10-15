@@ -17,6 +17,11 @@ import { ArchitectureDiagram, DeveloperFaq, DeveloperSectionHeading } from "./la
 
 const MCP_FAQ = [
   {
+    question: "Can my assistant turn a GitHub file or URL into a PDF?",
+    answer:
+      "Yes. Ask it to use create_pdf_from_url with a public GitHub file link or direct HTTPS text-file URL. The local server fetches up to 2 MiB and returns a PDF for review. It blocks private-network destinations and does not forward authentication, follow redirects, or submit a print job.",
+  },
+  {
     question: "Will the PDF preview appear inside my assistant?",
     answer:
       "Clients that support MCP Apps can display Codeprint’s offline PDF viewer. Other MCP clients receive a readable PDF resource and a local file path. Tool support alone does not imply inline preview support.",
