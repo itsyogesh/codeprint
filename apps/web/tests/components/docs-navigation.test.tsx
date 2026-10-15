@@ -26,10 +26,10 @@ describe("responsive documentation tabs", () => {
   ])("keeps %s accessible and selects its own panel", (name) => {
     render(<DocsPage />)
     const list = screen.getByRole("tablist", { name: "Documentation sections" })
-    const tab = within(list).getByRole("tab", { name, exact: true })
+    const tab = within(list).getByRole("tab", { name })
     fireEvent.mouseDown(tab, { button: 0, ctrlKey: false })
     expect(tab).toHaveAttribute("aria-selected", "true")
-    const panel = screen.getByRole("tabpanel", { name, exact: true })
+    const panel = screen.getByRole("tabpanel", { name })
     expect(panel).toBeVisible()
     expect(tab).toHaveAttribute("aria-controls", panel.id)
     expect(within(panel).getAllByRole("heading", { level: 2 }).length).toBeGreaterThan(0)
