@@ -1,6 +1,6 @@
 {
   "name": "@codeprint/print",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Safe local printer discovery and job submission for Codeprint.",
   "keywords": [
     "codeprint",

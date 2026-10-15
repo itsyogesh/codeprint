@@ -7,6 +7,7 @@ import { createInterface } from "node:readline/promises"
 import { pathToFileURL } from "node:url"
 import type { CreatePrintablePdfInput, PageOrientation, PageSize, PrintableFormat } from "@codeprint/core"
 import { renderPrintablePdf } from "@codeprint/core/render"
+import { importNodeSource } from "@codeprint/core/source/node"
 import { createPrintService, type DuplexMode, type PrintColorMode } from "@codeprint/print"
 import { Command, Option } from "commander"
 import { inferInput, parseFormat, readInput, writePdf } from "./files"
@@ -17,6 +18,7 @@ interface OutputOptions {
 }
 
 interface DocumentOptions {
+  url?: string
   format?: PrintableFormat
   language?: string
   filename?: string
@@ -54,6 +56,7 @@ function output(value: unknown, json: boolean | undefined, text: string) {
 
 function addDocumentOptions(command: Command) {
   return command
+    .option("--url <https-url>", "import a public GitHub file or direct HTTPS text file (2 MiB limit)")
     .addOption(new Option("--format <format>", "input format").argParser((value) => parseFormat(value)))
     .option("--language <language>", "syntax language for code")
     .option("--filename <name>", "filename shown in the PDF header")
@@ -85,8 +88,13 @@ async function documentInput(
   inputPath: string | undefined,
   options: DocumentOptions,
 ): Promise<CreatePrintablePdfInput> {
-  const source = await readInput(inputPath)
-  const inferred = inferInput(source.filename ?? options.filename)
+  if (options.url && inputPath) throw new Error("Choose either a local input file or --url, not both.")
+  if (inputPath && /^https?:\/\//i.test(inputPath)) throw new Error("Use --url <https-url> to import a public file.")
+  const remote = options.url ? await importNodeSource(options.url) : undefined
+  const source = remote ?? (await readInput(inputPath))
+  const inferred = remote
+    ? { format: remote.format, language: remote.language }
+    : inferInput(source.filename ?? options.filename)
   const format = options.format ?? inferred.format
   return {
     content: source.content,
@@ -125,7 +133,7 @@ export function createProgram() {
   const program = new Command()
     .name("codeprint")
     .description("Turn code, Markdown, and CSV into readable PDFs and local print jobs.")
-    .version("0.1.1")
+    .version("0.2.0")
     .option("--json", "write machine-readable JSON")
 
   addDocumentOptions(program.command("render [input]").description("Render a source file or stdin to PDF."))
@@ -165,6 +173,7 @@ export function createProgram() {
     .option("--page-ranges <ranges>", "pages such as 1-3,5")
     .option("-y, --yes", "submit without an interactive prompt")
     .action(async (inputPath: string | undefined, options: PrintCommandOptions, command: Command) => {
+      if (options.url && inputPath) throw new Error("Choose either a local input file or --url, not both.")
       let pdfPath: string
       let temporaryDirectory: string | undefined
       const isPdf = Boolean(inputPath && inputPath !== "-" && extname(inputPath).toLowerCase() === ".pdf")

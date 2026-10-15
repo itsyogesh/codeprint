@@ -242,6 +242,14 @@ async function consumerTests(consumer, tarballs) {
     input: "# Standard input\n\nA synthetic reading copy.\n",
   })
   await verifyPdf(stdinOutput, PDFDocument)
+  // Check the real installed URL entrypoint and safe default without networking.
+  await assert.rejects(
+    run(process.execPath, [cli, "render", "--url", "https://127.0.0.1/private.py"], { cwd: consumer }),
+    /private-network/,
+  )
+  const sourceModule = await import(pathToFileURL(consumerRequire.resolve("@codeprint/core/source")).href)
+  assert.equal(sourceModule.sourceType("main.py").language, "python")
+  assert.equal(sourceModule.isPublicAddress("127.0.0.1"), false)
   const { Client } = await import(
     pathToFileURL(consumerRequire.resolve("@modelcontextprotocol/sdk/client/index.js")).href
   )
@@ -282,7 +290,14 @@ async function consumerTests(consumer, tarballs) {
       const tools = (await client.listTools()).tools
       const create = tools.find((tool) => tool.name === "create_printable_pdf")
       const preview = tools.find((tool) => tool.name === "preview_pdf")
-      assert(create && preview, "Required PDF tools were not registered")
+      const urlImport = tools.find((tool) => tool.name === "create_pdf_from_url")
+      assert(create && preview && urlImport, "Required PDF tools were not registered")
+      assert.equal(urlImport.annotations.openWorldHint, true)
+      const blocked = await client.callTool({
+        name: "create_pdf_from_url",
+        arguments: { url: "https://127.0.0.1/private.py" },
+      })
+      assert(blocked.isError, "Installed MCP allowed a private-network URL")
       const result = await client.callTool({
         name: "create_printable_pdf",
         arguments: {
@@ -305,6 +320,7 @@ async function consumerTests(consumer, tarballs) {
       if (apps) {
         assert.equal(preview._meta?.ui?.resourceUri, previewUri)
         assert.equal(create._meta?.ui?.resourceUri, previewUri)
+        assert.equal(urlImport._meta?.ui?.resourceUri, previewUri)
         assert(resources.some((resourceItem) => resourceItem.uri === previewUri))
         const viewer = (await client.readResource({ uri: previewUri })).contents[0]
         assert.equal(viewer.mimeType, "text/html;profile=mcp-app")

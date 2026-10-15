@@ -16,6 +16,19 @@ npx @codeprint/cli render README.md
 
 ## Commands
 
+Import a public GitHub file or direct HTTPS UTF-8 text file and render locally:
+
+```bash
+codeprint render --url 'https://github.com/itsyogesh/codeprint/blob/main/README.md' -o reading-copy.pdf
+```
+
+`--url` also works with `print`; the normal print confirmation still applies.
+Choose either a local input or `--url`, not both. Imports are limited to 2 MiB
+and 15 seconds. Redirects, credentials, custom ports, private-network addresses,
+binary responses, and private repositories are not supported. Codeprint does not
+execute imported code or forward authentication. Your computer contacts the
+source host directly; document rendering and printer handling stay local.
+
 ```text
 codeprint render [input]          Render a source file or stdin to PDF
 codeprint print [input]           Prepare, confirm, and submit a local print job

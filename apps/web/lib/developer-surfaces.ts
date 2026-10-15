@@ -90,6 +90,13 @@ export const MCP_SOURCE_CLIENTS = MCP_CLIENTS.map((client) => ({
 
 export const CLI_COMMANDS = [
   {
+    id: "url",
+    label: "Import URL",
+    command:
+      "codeprint render --url 'https://github.com/itsyogesh/codeprint/blob/main/packages/cli/README.md' -o reading-copy.pdf",
+    output: ["Fetches the public file directly; renders its PDF locally.", "No physical print job is submitted."],
+  },
+  {
     id: "render",
     label: "Render PDF",
     command: "codeprint render README.md",
@@ -147,7 +154,7 @@ export const MCP_TOOL_GROUPS = [
     title: "Create the reading copy",
     description:
       "The assistant passes Markdown, code, JSON, or CSV to the local renderer. The PDF is saved without overwriting an existing file.",
-    tools: ["create_printable_pdf", "preview_pdf"],
+    tools: ["create_printable_pdf", "create_pdf_from_url", "preview_pdf"],
   },
   {
     title: "Inspect the local printer",

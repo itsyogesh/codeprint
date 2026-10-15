@@ -8,6 +8,7 @@ import MarkdownSettingsPanel from "@/components/markdown/markdown-settings"
 import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
 import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
+import { UrlImport } from "@/components/shared/url-import"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -199,6 +200,14 @@ export default function MarkdownPrinterApp() {
                         </Button>
                       </div>
                     </div>
+                    <UrlImport
+                      format="markdown"
+                      hasContent={Boolean(content.trim())}
+                      onImport={(source) => {
+                        handleContentChange(source.content)
+                        setFilename(source.filename)
+                      }}
+                    />
                     <Textarea
                       placeholder="Paste your markdown content here..."
                       value={content}

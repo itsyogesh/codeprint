@@ -193,6 +193,7 @@ Available tools:
 | Tool | Effect |
 | --- | --- |
 | `create_printable_pdf` | Writes a new local PDF without overwriting an existing file |
+| `create_pdf_from_url` | Fetches one public GitHub or HTTPS text file and creates a local PDF for review; never prints |
 | `preview_pdf` | Reopens an exact PDF created during the current server session |
 | `list_printers` | Lists configured printers |
 | `get_printer_capabilities` | Reads paper, duplex, and color options |
@@ -204,6 +205,29 @@ Available tools:
 The MCP instructions require explicit user approval between `prepare_print_job` and `submit_print_job`. A token expires after five minutes and cannot be reused.
 
 See [packages/mcp/README.md](packages/mcp/README.md) for examples and client configuration.
+
+## Importing public files by URL
+
+The website's **Import URL** control loads a public GitHub file link or a direct
+HTTPS text-file URL. Review the fetched file before replacing editor content.
+Codeprint offers the matching code, Markdown, or CSV editor when needed. The
+cross-editor handoff uses one-shot tab-local session storage with a one-minute
+expiry, not URL parameters. No import happens just by visiting a link.
+
+Browser imports contact the source host directly with no cookies or referrer;
+there is no Codeprint fetch proxy. Hosts that block CORS or redirect require a
+public Raw link or a download-and-upload fallback. A browser cannot inspect DNS
+answers; the website rejects literal private addresses and local hostnames,
+and browser network/security policies still apply to other hosts.
+
+The CLI supports `codeprint render --url 'https://github.com/itsyogesh/codeprint/blob/main/README.md'`.
+MCP exposes `create_pdf_from_url`. Both fetch locally using connection-time DNS
+validation, reject private/special-use IPs and redirects, and never forward
+authentication. All surfaces cap imports at 2 MiB and 15 seconds, require UTF-8
+text, and do not execute it. PDF generation stays on the user's device. Imports
+do not bypass the normal physical-printing approval flow. Private repositories,
+whole repositories, arbitrary web-page extraction, and authenticated URLs are
+outside this release.
 
 ## Direct printing
 

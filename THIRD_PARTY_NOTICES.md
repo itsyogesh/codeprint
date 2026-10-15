@@ -22,6 +22,12 @@ The OFL permits embedding these fonts in generated documents. Documents created
 with the fonts are not themselves placed under the OFL. Modified font files must
 continue to follow the relevant OFL terms and Reserved Font Name conditions.
 
+## Public source validation
+
+- [ipaddr.js](https://github.com/whitequark/ipaddr.js), MIT: IP address parsing
+  and special-use range classification for public file imports. The package
+  retains its upstream license in the dependency distribution.
+
 ## Diagram rendering
 
 ### Beautiful Mermaid

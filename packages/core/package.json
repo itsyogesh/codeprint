@@ -1,6 +1,6 @@
 {
   "name": "@codeprint/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Shared document model and PDF renderer for Codeprint.",
   "keywords": [
     "codeprint",
@@ -28,6 +28,18 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "exports": {
+    "./source": {
+      "types": "./dist/source.d.ts",
+      "import": "./dist/source.js"
+    },
+    "./source/browser": {
+      "types": "./dist/source-browser.d.ts",
+      "import": "./dist/source-browser.js"
+    },
+    "./source/node": {
+      "types": "./dist/source-node.d.ts",
+      "import": "./dist/source-node.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
@@ -72,6 +84,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "ipaddr.js": "2.5.0",
     "@react-pdf/renderer": "4.6.0",
     "@resvg/resvg-wasm": "2.6.2",
     "beautiful-mermaid": "1.1.3",

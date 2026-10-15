@@ -17,6 +17,11 @@ import {
 
 const CLI_FAQ = [
   {
+    question: "Can I render a GitHub file or public URL?",
+    answer:
+      "Yes. Use codeprint render --url followed by a public GitHub file link or a direct HTTPS text-file URL. Your computer fetches the file and renders its PDF locally. Imports are limited to 2 MiB; private repositories and redirecting links are not supported. The same --url option works with print, with the normal confirmation step.",
+  },
+  {
     question: "Is the CLI free?",
     answer: "Yes. The CLI is free and open source for local use.",
   },
