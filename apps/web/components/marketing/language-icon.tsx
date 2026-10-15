@@ -51,7 +51,7 @@ export function LanguageIcon({ className, language, priority = false }: Language
       height={20}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
-      className={cn("h-5 w-5 object-contain", className)}
+      className={cn("h-5 w-5 object-contain", language === "Rust" && "dark:invert", className)}
     />
   )
 }

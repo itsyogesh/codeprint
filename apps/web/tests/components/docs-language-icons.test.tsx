@@ -8,6 +8,13 @@ vi.mock("@/components/shared/nav-header", () => ({ default: () => null }))
 vi.mock("@/components/shared/site-footer", () => ({ SiteFooter: () => null }))
 
 describe("shared language icons", () => {
+  it("keeps the monochrome Rust logo visible in dark mode without recoloring other brands", () => {
+    const { container, rerender } = render(<LanguageIcon language="Rust" />)
+    expect(container.querySelector("img")).toHaveClass("dark:invert")
+    rerender(<LanguageIcon language="Python" />)
+    expect(container.querySelector("img")).not.toHaveClass("dark:invert")
+  })
+
   it.each(getLanguagesForDisplay())("renders the shared SVG asset for $name", ({ name }) => {
     const { container } = render(<LanguageIcon language={name} className="h-6 w-6" />)
     const icon = container.querySelector("img")
