@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { ogImageUrl } from "@/lib/og"
 import { SITE_URL } from "@/lib/site"
-import "./globals.css"
+import "@/app/globals.css"
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -103,10 +103,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export function AppRoot({
   children,
+  marketing = false,
 }: Readonly<{
   children: React.ReactNode
+  marketing?: boolean
 }>) {
   return (
     <html
@@ -115,7 +117,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        data-clarity-mask="True"
+        data-clarity-mask="true"
+        data-analytics-surface={marketing ? "marketing" : "tools"}
         className="min-h-screen bg-slate-50 font-sans antialiased dark:bg-[#030712]"
         suppressHydrationWarning
       >
@@ -124,7 +127,11 @@ export default function RootLayout({
           <Toaster />
         </ThemeProvider>
         <WebSiteJsonLd />
-        <AnalyticsProvider googleId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID} />
+        <AnalyticsProvider
+          googleId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID}
+          clarityId={marketing ? process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID : undefined}
+          replayConfigured={Boolean(process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID)}
+        />
       </body>
     </html>
   )

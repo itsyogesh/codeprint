@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import DocsPage from "@/app/docs/page"
+import DocsPage from "@/app/(marketing)/docs/page"
 import { LanguageIcon } from "@/components/marketing/language-icon"
 import { getLanguagesForDisplay } from "@/lib/languages"
 

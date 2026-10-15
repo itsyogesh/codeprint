@@ -43,9 +43,17 @@ export default function PrivacyPage() {
           change your choice using Analytics preferences in the footer.
         </p>
         <p>
-          Microsoft Clarity session replay is disabled in this release. Enabling it will require a verified separation
-          between public information pages and document tools. Do Not Track and Global Privacy Control disable
-          analytics.
+          Microsoft Clarity loads only after a separate choice to allow marketing page replay. It records interactions
+          on MCP, CLI, Docs, About, Blog, Changelog, Privacy, and Terms pages with strict text masking. Advertising
+          storage is denied. It never loads on the homepage, language editors, Markdown, CSV, PDF print routes, or
+          social previews. Moving between information pages and document tools starts a separate browser document, so
+          replay listeners cannot follow you into a tool.
+        </p>
+        <p>
+          Allowing Google Analytics does not enable Clarity. You can reject either option or change your choices in
+          Analytics preferences in the footer. Revoking consent unloads optional tracking. Do Not Track and Global
+          Privacy Control disable analytics regardless of saved choices. If your browser cannot save consent, optional
+          tracking stays off.
         </p>
       </ContentSection>
       <ContentSection title="Third parties">
