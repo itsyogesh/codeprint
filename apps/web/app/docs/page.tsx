@@ -86,12 +86,25 @@ export default function DocsPage() {
         <div className="container mx-auto py-12 px-4">
           <div className="max-w-6xl mx-auto">
             <Tabs value={activeSection} onValueChange={setActiveSection} className="space-y-8">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="languages">Languages</TabsTrigger>
-                <TabsTrigger value="printing">Printing</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-                <TabsTrigger value="troubleshooting">Help</TabsTrigger>
+              <TabsList
+                aria-label="Documentation sections"
+                className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-5"
+              >
+                <TabsTrigger value="overview" className="min-h-11 sm:min-h-0">
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="languages" className="min-h-11 sm:min-h-0">
+                  Languages
+                </TabsTrigger>
+                <TabsTrigger value="printing" className="min-h-11 sm:min-h-0">
+                  Printing
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="min-h-11 sm:min-h-0">
+                  Settings
+                </TabsTrigger>
+                <TabsTrigger value="troubleshooting" className="col-span-2 min-h-11 sm:col-span-1 sm:min-h-0">
+                  Help
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-8">
