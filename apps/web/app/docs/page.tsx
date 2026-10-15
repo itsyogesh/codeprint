@@ -18,6 +18,7 @@ import {
 import Link from "next/link"
 import { useState } from "react"
 import { HeroDescription, HeroHeading } from "@/components/marketing/hero-copy"
+import { LanguageIcon } from "@/components/marketing/language-icon"
 import NavHeader from "@/components/shared/nav-header"
 import { SiteFooter } from "@/components/shared/site-footer"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -30,29 +31,29 @@ export default function DocsPage() {
   const [activeSection, setActiveSection] = useState("overview")
 
   const supportedLanguages = [
-    { name: "JavaScript", ext: ".js, .jsx", icon: "🟨" },
-    { name: "TypeScript", ext: ".ts, .tsx", icon: "🔷" },
-    { name: "Python", ext: ".py", icon: "🐍" },
-    { name: "Java", ext: ".java", icon: "☕" },
-    { name: "C#", ext: ".cs", icon: "🔵" },
-    { name: "C", ext: ".c, .h", icon: "Ⓒ" },
-    { name: "C++", ext: ".cpp, .cc, .hpp", icon: "⚡" },
-    { name: "Go", ext: ".go", icon: "🐹" },
-    { name: "Rust", ext: ".rs", icon: "🦀" },
-    { name: "PHP", ext: ".php", icon: "🐘" },
-    { name: "Ruby", ext: ".rb", icon: "💎" },
-    { name: "Swift", ext: ".swift", icon: "🍎" },
-    { name: "Kotlin", ext: ".kt", icon: "🎯" },
-    { name: "HTML", ext: ".html", icon: "🌐" },
-    { name: "CSS", ext: ".css", icon: "🎨" },
-    { name: "SQL", ext: ".sql", icon: "🗄️" },
-    { name: "Shell/Bash", ext: ".sh, .bash", icon: "💻" },
-    { name: "JSON", ext: ".json", icon: "📋" },
-    { name: "R", ext: ".r, .R", icon: "📈" },
-    { name: "Dart", ext: ".dart", icon: "🎯" },
-    { name: "Scala", ext: ".scala, .sc", icon: "λ" },
-    { name: "Markdown", ext: ".md, .markdown", icon: "📝", special: "Rendered" },
-    { name: "CSV", ext: ".csv", icon: "📊", special: "Table Format" },
+    { name: "JavaScript", ext: ".js, .jsx" },
+    { name: "TypeScript", ext: ".ts, .tsx" },
+    { name: "Python", ext: ".py" },
+    { name: "Java", ext: ".java" },
+    { name: "C#", ext: ".cs" },
+    { name: "C", ext: ".c, .h" },
+    { name: "C++", ext: ".cpp, .cc, .hpp" },
+    { name: "Go", ext: ".go" },
+    { name: "Rust", ext: ".rs" },
+    { name: "PHP", ext: ".php" },
+    { name: "Ruby", ext: ".rb" },
+    { name: "Swift", ext: ".swift" },
+    { name: "Kotlin", ext: ".kt" },
+    { name: "HTML", ext: ".html" },
+    { name: "CSS", ext: ".css" },
+    { name: "SQL", ext: ".sql" },
+    { name: "Shell/Bash", ext: ".sh, .bash" },
+    { name: "JSON", ext: ".json" },
+    { name: "R", ext: ".r, .R" },
+    { name: "Dart", ext: ".dart" },
+    { name: "Scala", ext: ".scala, .sc" },
+    { name: "Markdown", ext: ".md, .markdown", special: "Rendered" },
+    { name: "CSV", ext: ".csv", special: "Table Format" },
   ]
 
   return (
@@ -223,7 +224,7 @@ export default function DocsPage() {
                           className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-300 dark:hover:border-orange-600 transition-colors"
                         >
                           <div className="flex items-center gap-3 mb-2">
-                            <span className="text-2xl">{lang.icon}</span>
+                            <LanguageIcon language={lang.name} className="h-6 w-6 shrink-0" />
                             <div>
                               <h3 className="font-semibold">{lang.name}</h3>
                               {lang.special && (
@@ -647,7 +648,10 @@ export default function DocsPage() {
                     <h3 className="text-2xl font-bold mb-6">Browser Compatibility</h3>
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <h4 className="font-semibold mb-3 text-green-700 dark:text-green-400">✅ Fully Supported</h4>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2 text-green-700 dark:text-green-400">
+                          <CheckCircle aria-hidden="true" className="h-5 w-5 shrink-0" />
+                          Fully Supported
+                        </h4>
                         <ul className="space-y-2 text-sm">
                           <li className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500" />
@@ -668,7 +672,10 @@ export default function DocsPage() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-3 text-yellow-700 dark:text-yellow-400">⚠️ Limited Support</h4>
+                        <h4 className="font-semibold mb-3 flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                          <AlertCircle aria-hidden="true" className="h-5 w-5 shrink-0" />
+                          Limited Support
+                        </h4>
                         <ul className="space-y-2 text-sm">
                           <li className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-yellow-500" />
