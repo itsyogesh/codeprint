@@ -183,7 +183,7 @@ export default function ActualPdfPreview({
                 {pageStatus}
               </span>
             </div>
-            <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {paper.name} · {paper.dimensions} · {orientation === "portrait" ? "Portrait" : "Landscape"}
             </p>
           </div>

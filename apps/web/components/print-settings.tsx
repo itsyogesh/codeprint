@@ -94,11 +94,12 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
               size="icon"
               className="h-8 w-8 rounded-full"
               onClick={decrementFontSize}
+              aria-label="Decrease font size"
               disabled={settings.fontSize <= 6}
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <div className="relative w-16">
+            <div className="relative w-20 shrink-0">
               <Input
                 id="fontSize"
                 type="number"
@@ -106,7 +107,7 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
                 max={24}
                 value={settings.fontSize}
                 onChange={(e) => handleChange("fontSize", Number.parseInt(e.target.value, 10) || 12)}
-                className="text-center pr-8"
+                className="pl-2 pr-7 text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">px</span>
             </div>
@@ -115,6 +116,7 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
               size="icon"
               className="h-8 w-8 rounded-full"
               onClick={incrementFontSize}
+              aria-label="Increase font size"
               disabled={settings.fontSize >= 24}
             >
               <Plus className="h-3 w-3" />
@@ -131,6 +133,7 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
               size="icon"
               className="h-8 w-8 rounded-full"
               onClick={decrementColumns}
+              aria-label="Decrease columns"
               disabled={settings.columns <= 1}
             >
               <Minus className="h-3 w-3" />
@@ -149,6 +152,7 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
               size="icon"
               className="h-8 w-8 rounded-full"
               onClick={incrementColumns}
+              aria-label="Increase columns"
               disabled={settings.columns >= 3}
             >
               <Plus className="h-3 w-3" />
@@ -168,6 +172,8 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
                   : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
               }`}
               onClick={() => handleChange("orientation", "portrait")}
+              aria-label="Portrait"
+              aria-pressed={settings.orientation === "portrait"}
             >
               <Smartphone className="h-5 w-5" />
             </button>
@@ -179,6 +185,8 @@ export default function PrintSettings({ settings, setSettings }: PrintSettingsPr
                   : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
               }`}
               onClick={() => handleChange("orientation", "landscape")}
+              aria-label="Landscape"
+              aria-pressed={settings.orientation === "landscape"}
             >
               <Laptop className="h-5 w-5" />
             </button>

@@ -6,11 +6,13 @@ import dynamic from "next/dynamic"
 import { useCallback, useMemo, useState } from "react"
 import CSVSettingsPanel from "@/components/csv/csv-settings"
 import type { PdfPreviewState } from "@/components/pdf/actual-pdf-preview"
+import { EditorSettingsContent } from "@/components/shared/editor-settings-content"
+import { EditorWindowBar } from "@/components/shared/editor-window-bar"
 import FileDropZone from "@/components/shared/file-drop-zone"
 import { WebMcpReview } from "@/components/shared/webmcp-review"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -131,19 +133,9 @@ export default function CsvPrinterApp() {
         {/* Editor */}
         <div className="mb-8">
           <Card className="overflow-hidden rounded-2xl border-slate-200 bg-white p-0 shadow-2xl dark:border-white/[0.06] dark:bg-white/[0.02]">
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.01]">
-              <div className="flex gap-2" aria-hidden="true">
-                <span className="h-3 w-3 rounded-full bg-red-500/80" />
-                <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                <span className="h-3 w-3 rounded-full bg-green-500/80" />
-              </div>
-              <span className="font-mono text-xs text-slate-500 dark:text-slate-400">{filename || "untitled.csv"}</span>
-              <span className="rounded border border-orange-500/20 bg-orange-500/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-orange-500/80">
-                TABLE VIEW
-              </span>
-            </div>
+            <EditorWindowBar filename={filename || "untitled.csv"} mode="TABLE VIEW" />
 
-            <div className="space-y-4 p-6">
+            <div className="space-y-4 p-4 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Table2 className="h-5 w-5 text-orange-500" />
@@ -202,7 +194,7 @@ export default function CsvPrinterApp() {
         {/* Preview */}
         {showPreview && (
           <div>
-            <Card className="rounded-2xl border-slate-200 bg-white p-6 shadow-xl dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <Card className="rounded-2xl border-slate-200 bg-white p-4 shadow-xl sm:p-6 dark:border-white/[0.06] dark:bg-white/[0.02]">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <h2 className="flex items-center gap-2 font-serif text-xl font-bold">Preview</h2>
 
@@ -214,9 +206,9 @@ export default function CsvPrinterApp() {
                         Settings
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[90vw] max-w-96 p-4 sm:w-96">
+                    <EditorSettingsContent>
                       <CSVSettingsPanel settings={settings} setSettings={setSettings} />
-                    </DropdownMenuContent>
+                    </EditorSettingsContent>
                   </DropdownMenu>
 
                   <Button

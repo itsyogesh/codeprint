@@ -41,11 +41,12 @@ export default function PdfPageCanvas({
     return () => observer.disconnect()
   }, [])
 
-  const pageSizing = zoom === "page-width" ? { width: Math.max(240, containerWidth) } : { scale: zoom / 100 }
+  const pageSizing = zoom === "page-width" ? { width: Math.max(1, containerWidth) } : { scale: zoom / 100 }
 
   return (
-    <div ref={containerRef} className="flex min-h-[580px] min-w-full justify-center" data-pdf-page-container>
+    <div ref={containerRef} className="flex min-h-[580px] w-full" data-pdf-page-container>
       <Document
+        className="mx-auto shrink-0"
         file={url}
         loading={<PageLoadingState />}
         error={null}
