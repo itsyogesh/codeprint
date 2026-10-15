@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
-import DocsPage from "@/app/docs/page"
+import DocsPage from "@/app/(marketing)/docs/page"
 
 vi.mock("@/components/shared/nav-header", () => ({ default: () => null }))
 vi.mock("@/components/shared/site-footer", () => ({ SiteFooter: () => null }))

@@ -9,10 +9,16 @@ import { Button } from "@/components/ui/button"
 import {
   ANALYTICS_CONSENT_KEY,
   ANALYTICS_PREFERENCES_EVENT,
+  canReplayPath,
+  canReplayUrl,
   hasTrackingOptOut,
   isProductionHost,
+  REPLAY_CONSENT_KEY,
+  readConsent,
   revokeGoogleAnalytics,
   sanitizeAnalyticsUrl,
+  stopReplay,
+  type TrackingConsent,
 } from "@/lib/analytics-privacy"
 
 const Analytics = dynamic(() => import("@vercel/analytics/react").then((m) => m.Analytics), { ssr: false })
@@ -21,39 +27,84 @@ const SpeedInsights = dynamic(() => import("@vercel/speed-insights/next").then((
 type AnalyticsWindow = Window & {
   dataLayer?: unknown[]
   gtag?: (...args: unknown[]) => void
+  clarity?: ((...args: unknown[]) => void) & { q?: unknown[][] }
 }
 
-export function AnalyticsProvider({ googleId }: { googleId?: string }) {
+export function AnalyticsProvider({
+  googleId,
+  clarityId,
+  replayConfigured = false,
+}: {
+  googleId?: string
+  clarityId?: string
+  replayConfigured?: boolean
+}) {
   const pathname = usePathname()
   const [production, setProduction] = useState(false)
-  const [consent, setConsent] = useState<"granted" | "denied" | null>(null)
+  const [consent, setConsent] = useState<TrackingConsent>(null)
+  const [replayConsent, setReplayConsent] = useState<TrackingConsent>(null)
+  const [googleChoice, setGoogleChoice] = useState(false)
+  const [replayChoice, setReplayChoice] = useState(false)
+  const [storageError, setStorageError] = useState(false)
   const [preferencesOpen, setPreferencesOpen] = useState(false)
   const [googleReady, setGoogleReady] = useState(false)
+  const [replayReady, setReplayReady] = useState(false)
   const initializedGoogle = useRef(false)
+  const initializedReplay = useRef(false)
   const validGoogleId = /^G-[A-Z0-9]+$/.test(googleId ?? "") ? googleId : undefined
+  const validClarityId = /^[a-z0-9]{6,20}$/.test(clarityId ?? "") ? clarityId : undefined
 
   useEffect(() => {
     const allowed = isProductionHost(window.location.hostname) && !hasTrackingOptOut(navigator)
     setProduction(allowed)
     try {
-      const saved = localStorage.getItem(ANALYTICS_CONSENT_KEY)
-      setConsent(saved === "granted" || saved === "denied" ? saved : null)
+      const saved = readConsent(localStorage, ANALYTICS_CONSENT_KEY)
+      const replay = readConsent(localStorage, REPLAY_CONSENT_KEY)
+      setConsent(saved)
+      setReplayConsent(replay)
+      setGoogleChoice(saved === "granted")
+      setReplayChoice(replay === "granted")
     } catch {
       /* A blocked preference store keeps optional tracking off. */
     }
-    const open = () => setPreferencesOpen(true)
+    const open = () => {
+      try {
+        setGoogleChoice(readConsent(localStorage, ANALYTICS_CONSENT_KEY) === "granted")
+        setReplayChoice(readConsent(localStorage, REPLAY_CONSENT_KEY) === "granted")
+      } catch {
+        /* Storage access itself can be blocked. Keep choices off. */
+      }
+      setPreferencesOpen(true)
+    }
     const syncConsent = (event: StorageEvent) => {
-      if (event.key !== ANALYTICS_CONSENT_KEY && event.key !== null) return
+      if (![ANALYTICS_CONSENT_KEY, REPLAY_CONSENT_KEY, null].includes(event.key)) return
       const next = event.newValue === "granted" ? "granted" : event.newValue === "denied" ? "denied" : null
-      if (next !== "granted") revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
-      setConsent(next)
-      if (initializedGoogle.current) window.location.reload()
+      if (event.key === ANALYTICS_CONSENT_KEY || event.key === null) {
+        if (next !== "granted") revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
+        setConsent(next)
+        setGoogleChoice(next === "granted")
+      }
+      if (event.key === REPLAY_CONSENT_KEY || event.key === null) {
+        if (next !== "granted") stopReplay(window as AnalyticsWindow)
+        setReplayConsent(next)
+        setReplayChoice(next === "granted")
+      }
+      if (initializedGoogle.current || initializedReplay.current) window.location.reload()
+    }
+    // A restored marketing document must not resume listeners with stale consent.
+    const restored = (event: PageTransitionEvent) => {
+      if (!event.persisted || (!initializedGoogle.current && !initializedReplay.current)) return
+      revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
+      stopReplay(window as AnalyticsWindow)
+      window.location.reload()
     }
     window.addEventListener(ANALYTICS_PREFERENCES_EVENT, open)
     window.addEventListener("storage", syncConsent)
+    window.addEventListener("pageshow", restored)
     return () => {
       window.removeEventListener(ANALYTICS_PREFERENCES_EVENT, open)
       window.removeEventListener("storage", syncConsent)
+      window.removeEventListener("pageshow", restored)
     }
   }, [validGoogleId])
 
@@ -93,23 +144,67 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
     })
   }, [consent, pathname, production, validGoogleId])
 
-  function choose(value: "granted" | "denied") {
-    if (value === "denied") revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
-    try {
-      localStorage.setItem(ANALYTICS_CONSENT_KEY, value)
-    } catch {
-      /* Session-only choice. */
+  useEffect(() => {
+    if (
+      !production ||
+      replayConsent !== "granted" ||
+      !validClarityId ||
+      !canReplayPath(pathname) ||
+      !canReplayUrl(window.location.href)
+    ) {
+      setReplayReady(false)
+      if (initializedReplay.current) {
+        stopReplay(window as AnalyticsWindow)
+        window.location.reload()
+      }
+      return
     }
-    setConsent(value)
+    if (initializedReplay.current) return
+    const browser = window as AnalyticsWindow
+    browser.clarity ??= (...args: unknown[]) => {
+      browser.clarity!.q ??= []
+      browser.clarity!.q.push(args)
+    }
+    browser.clarity("consentv2", { ad_Storage: "denied", analytics_Storage: "granted" })
+    initializedReplay.current = true
+    setReplayReady(true)
+  }, [pathname, production, replayConsent, validClarityId])
+
+  function choose(google: boolean, replay: boolean) {
+    if (!google) revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
+    if (!replay) stopReplay(window as AnalyticsWindow)
+    try {
+      localStorage.setItem(ANALYTICS_CONSENT_KEY, google ? "granted" : "denied")
+      localStorage.setItem(REPLAY_CONSENT_KEY, replay ? "granted" : "denied")
+    } catch {
+      // Without durable consent, a reload or another tab cannot reliably revoke it.
+      try {
+        localStorage.removeItem(ANALYTICS_CONSENT_KEY)
+        localStorage.removeItem(REPLAY_CONSENT_KEY)
+      } catch {
+        /* Some browsers also block removal. Keep this document disabled. */
+      }
+      revokeGoogleAnalytics(window as AnalyticsWindow, validGoogleId)
+      stopReplay(window as AnalyticsWindow)
+      setConsent("denied")
+      setReplayConsent("denied")
+      setStorageError(true)
+      if (initializedGoogle.current || initializedReplay.current) window.location.reload()
+      return
+    }
+    setConsent(google ? "granted" : "denied")
+    setReplayConsent(replay ? "granted" : "denied")
+    setStorageError(false)
     setPreferencesOpen(false)
-    if (value === "denied") {
-      // Reload removes optional scripts and stops already installed listeners.
-      if (initializedGoogle.current) window.location.reload()
-    } else if (initializedGoogle.current) window.location.reload()
+    // Unloading removes listeners; consent API calls alone do not disable replay.
+    if (initializedGoogle.current || initializedReplay.current) window.location.reload()
   }
 
-  const optionalConfigured = Boolean(validGoogleId)
-  const showPreferences = preferencesOpen || (production && optionalConfigured && consent === null)
+  const showPreferences =
+    storageError ||
+    preferencesOpen ||
+    (production &&
+      ((Boolean(validGoogleId) && consent === null) || (Boolean(validClarityId) && replayConsent === null)))
   return (
     <>
       {production ? (
@@ -117,6 +212,13 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
           <Analytics beforeSend={(event) => ({ ...event, url: sanitizeAnalyticsUrl(event.url) })} />
           <SpeedInsights beforeSend={(event) => ({ ...event, url: sanitizeAnalyticsUrl(event.url) })} />
         </>
+      ) : null}
+      {production && replayConsent === "granted" && replayReady && validClarityId && canReplayPath(pathname) ? (
+        <Script
+          id="codeprint-clarity"
+          src={`https://www.clarity.ms/tag/${validClarityId}`}
+          strategy="afterInteractive"
+        />
       ) : null}
       {production && consent === "granted" && googleReady && validGoogleId ? (
         <Script
@@ -130,20 +232,58 @@ export function AnalyticsProvider({ googleId }: { googleId?: string }) {
           aria-label="Analytics preferences"
           className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
         >
-          <h2 className="font-serif text-lg font-bold text-slate-950 dark:text-white">Help us improve Codeprint?</h2>
+          <h2 className="font-serif text-lg font-bold text-slate-950 dark:text-white">Analytics preferences</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Optional Google Analytics measures site visits. Your documents are not recorded, and session replay is
-            disabled.{" "}
+            Both choices are optional. Editors and PDF previews are never recorded.{" "}
             <Link href="/privacy" className="underline underline-offset-4">
               Read our privacy policy.
             </Link>
           </p>
+          <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-200">
+            {validGoogleId ? (
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={googleChoice}
+                  onChange={(event) => setGoogleChoice(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
+                />
+                <span>
+                  Google Analytics
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">
+                    Measure page visits without document content or URL queries.
+                  </span>
+                </span>
+              </label>
+            ) : null}
+            {replayConfigured ? (
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={replayChoice}
+                  onChange={(event) => setReplayChoice(event.target.checked)}
+                  className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
+                />
+                <span>
+                  Marketing page replay
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">
+                    Let Microsoft Clarity record interactions on information pages only, with strict text masking.
+                  </span>
+                </span>
+              </label>
+            ) : null}
+          </div>
+          {storageError ? (
+            <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
+              Your browser could not save these choices. Optional tracking stays off.
+            </p>
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-3">
-            <Button variant="outline" onClick={() => choose("denied")}>
-              No thanks
+            <Button variant="outline" onClick={() => choose(false, false)}>
+              Reject optional
             </Button>
-            <Button variant="outline" onClick={() => choose("granted")}>
-              Allow analytics
+            <Button variant="outline" onClick={() => choose(googleChoice, replayChoice)}>
+              Save choices
             </Button>
           </div>
         </section>
