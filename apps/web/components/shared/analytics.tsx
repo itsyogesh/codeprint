@@ -47,6 +47,7 @@ export function AnalyticsProvider({
   const [replayChoice, setReplayChoice] = useState(false)
   const [storageError, setStorageError] = useState(false)
   const [preferencesOpen, setPreferencesOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const [googleReady, setGoogleReady] = useState(false)
   const [replayReady, setReplayReady] = useState(false)
   const initializedGoogle = useRef(false)
@@ -74,6 +75,7 @@ export function AnalyticsProvider({
       } catch {
         /* Storage access itself can be blocked. Keep choices off. */
       }
+      setDetailsOpen(true)
       setPreferencesOpen(true)
     }
     const syncConsent = (event: StorageEvent) => {
@@ -196,6 +198,7 @@ export function AnalyticsProvider({
     setReplayConsent(replay ? "granted" : "denied")
     setStorageError(false)
     setPreferencesOpen(false)
+    setDetailsOpen(false)
     // Unloading removes listeners; consent API calls alone do not disable replay.
     if (initializedGoogle.current || initializedReplay.current) window.location.reload()
   }
@@ -230,61 +233,86 @@ export function AnalyticsProvider({
       {showPreferences ? (
         <section
           aria-label="Analytics preferences"
-          className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-lg rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+          className="fixed inset-x-4 bottom-4 z-50 max-h-[calc(100dvh-2rem)] max-w-sm overflow-y-auto rounded-2xl bg-white p-5 shadow-xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700 sm:left-6 sm:right-auto sm:bottom-6 sm:w-96"
         >
-          <h2 className="font-serif text-lg font-bold text-slate-950 dark:text-white">Analytics preferences</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Both choices are optional. Editors and PDF previews are never recorded.{" "}
-            <Link href="/privacy" className="underline underline-offset-4">
-              Read our privacy policy.
-            </Link>
+          <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+            {detailsOpen ? "Analytics preferences" : "Help improve Codeprint"}
+          </h2>
+          <p className="mt-1.5 text-sm leading-5 text-slate-600 dark:text-slate-300">
+            {detailsOpen
+              ? "Choose what to share. Editors and PDFs are never recorded."
+              : "Optional visit analytics and masked page replay. Editors and PDFs are never recorded."}
           </p>
-          <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-200">
-            {validGoogleId ? (
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={googleChoice}
-                  onChange={(event) => setGoogleChoice(event.target.checked)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
-                />
-                <span>
-                  Google Analytics
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">
-                    Measure page visits without document content or URL queries.
+          {detailsOpen ? (
+            <div id="analytics-options" className="mt-4 space-y-4 text-sm text-slate-700 dark:text-slate-200">
+              {validGoogleId ? (
+                <label className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={googleChoice}
+                    onChange={(event) => setGoogleChoice(event.target.checked)}
+                    className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
+                  />
+                  <span>
+                    Google Analytics
+                    <span className="block text-xs text-slate-500 dark:text-slate-400">
+                      Page visits, not document content.
+                    </span>
                   </span>
-                </span>
-              </label>
-            ) : null}
-            {replayConfigured ? (
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={replayChoice}
-                  onChange={(event) => setReplayChoice(event.target.checked)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
-                />
-                <span>
-                  Marketing page replay
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">
-                    Let Microsoft Clarity record interactions on information pages only, with strict text masking.
+                </label>
+              ) : null}
+              {replayConfigured ? (
+                <label className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={replayChoice}
+                    onChange={(event) => setReplayChoice(event.target.checked)}
+                    className="mt-1 h-4 w-4 shrink-0 accent-orange-600"
+                  />
+                  <span>
+                    Marketing page replay
+                    <span className="block text-xs text-slate-500 dark:text-slate-400">
+                      Masked interactions on information pages only.
+                    </span>
                   </span>
-                </span>
-              </label>
-            ) : null}
-          </div>
+                </label>
+              ) : null}
+            </div>
+          ) : null}
           {storageError ? (
             <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-300">
-              Your browser could not save these choices. Optional tracking stays off.
+              Could not save your choices. Optional tracking stays off.
             </p>
           ) : null}
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={() => choose(false, false)}>
-              Reject optional
+              Reject all
             </Button>
-            <Button variant="outline" onClick={() => choose(googleChoice, replayChoice)}>
-              Save choices
+            <Button
+              variant="outline"
+              onClick={() =>
+                detailsOpen ? choose(googleChoice, replayChoice) : choose(Boolean(validGoogleId), replayConfigured)
+              }
+            >
+              {detailsOpen ? "Save choices" : "Accept all"}
             </Button>
+          </div>
+          <div className="mt-2 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+            <button
+              type="button"
+              aria-expanded={detailsOpen}
+              aria-controls={detailsOpen ? "analytics-options" : undefined}
+              onClick={() => setDetailsOpen(!detailsOpen)}
+              className="min-h-10 underline-offset-4 hover:underline focus-visible:outline-orange-500"
+            >
+              {detailsOpen ? "Back" : "Preferences"}
+            </button>
+            <Link
+              href="/privacy"
+              className="inline-flex min-h-10 items-center underline-offset-4 hover:underline focus-visible:outline-orange-500"
+            >
+              Privacy policy
+            </Link>
           </div>
         </section>
       ) : null}

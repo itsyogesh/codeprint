@@ -32,10 +32,61 @@ afterEach(() => {
 })
 
 describe("optional analytics consent", () => {
+  it("starts with a compact notice and keeps individual controls behind Preferences", async () => {
+    render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
+    await screen.findByRole("button", { name: "Accept all" })
+    expect(screen.queryByRole("checkbox")).toBeNull()
+    expect(screen.getByRole("button", { name: "Reject all" })).toBeVisible()
+    fireEvent.click(screen.getByRole("button", { name: "Preferences", exact: true }))
+    expect(screen.getByRole("checkbox", { name: /Google Analytics/ })).not.toBeChecked()
+    expect(screen.getByRole("checkbox", { name: /Marketing page replay/ })).not.toBeChecked()
+    expect(screen.queryByTestId("codeprint-clarity")).toBeNull()
+    expect(screen.queryByTestId("codeprint-google-analytics")).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "Back", exact: true }))
+    expect(screen.queryByRole("checkbox")).toBeNull()
+    expect(localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBeNull()
+    expect(localStorage.getItem(REPLAY_CONSENT_KEY)).toBeNull()
+  })
+
+  it("accepts both configured purposes only after Accept all", async () => {
+    route.pathname = "/mcp"
+    render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
+    fireEvent.click(await screen.findByRole("button", { name: "Accept all" }))
+    await screen.findByTestId("codeprint-google-analytics")
+    await screen.findByTestId("codeprint-clarity")
+    expect(localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBe("granted")
+    expect(localStorage.getItem(REPLAY_CONSENT_KEY)).toBe("granted")
+    expect(screen.queryByRole("region", { name: "Analytics preferences" })).toBeNull()
+  })
+
+  it("rejects both purposes in one action", async () => {
+    route.pathname = "/mcp"
+    render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
+    fireEvent.click(await screen.findByRole("button", { name: "Reject all" }))
+    expect(localStorage.getItem(ANALYTICS_CONSENT_KEY)).toBe("denied")
+    expect(localStorage.getItem(REPLAY_CONSENT_KEY)).toBe("denied")
+    expect(screen.queryByTestId("codeprint-clarity")).toBeNull()
+    expect(screen.queryByTestId("codeprint-google-analytics")).toBeNull()
+  })
+
+  it("accepts configured replay from an editor without loading replay there", async () => {
+    render(<AnalyticsProvider googleId={googleId} replayConfigured />)
+    fireEvent.click(await screen.findByRole("button", { name: "Accept all" }))
+    await screen.findByTestId("codeprint-google-analytics")
+    expect(localStorage.getItem(REPLAY_CONSENT_KEY)).toBe("granted")
+    expect(screen.queryByTestId("codeprint-clarity")).toBeNull()
+  })
+
+  it("does not grant an unconfigured purpose", async () => {
+    render(<AnalyticsProvider googleId={googleId} />)
+    fireEvent.click(await screen.findByRole("button", { name: "Accept all" }))
+    expect(localStorage.getItem(REPLAY_CONSENT_KEY)).toBe("denied")
+  })
+
   it("allows a later explicit opt-in after an initial decline without leaving tracking disabled", async () => {
     ;(window as TestWindow).gtag = vi.fn()
     render(<AnalyticsProvider googleId={googleId} />)
-    fireEvent.click(await screen.findByRole("button", { name: "Reject optional" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Reject all" }))
     expect(Reflect.get(window, `ga-disable-${googleId}`)).toBe(true)
     expect(screen.queryByTestId("codeprint-google-analytics")).toBeNull()
     fireEvent(window, new Event(ANALYTICS_PREFERENCES_EVENT))
@@ -82,6 +133,7 @@ describe("optional analytics consent", () => {
     ;(window as TestWindow).clarity = clarity
     render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
     await screen.findByTestId("codeprint-google-analytics")
+    fireEvent.click(await screen.findByRole("button", { name: "Preferences", exact: true }))
     expect(screen.getByRole("checkbox", { name: /Marketing page replay/ })).not.toBeChecked()
     expect(screen.queryByTestId("codeprint-clarity")).toBeNull()
     expect(clarity).not.toHaveBeenCalled()
@@ -92,6 +144,7 @@ describe("optional analytics consent", () => {
     const clarity = vi.fn()
     ;(window as TestWindow).clarity = clarity
     render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
+    fireEvent.click(await screen.findByRole("button", { name: "Preferences", exact: true }))
     fireEvent.click(await screen.findByRole("checkbox", { name: /Marketing page replay/ }))
     fireEvent.click(screen.getByRole("button", { name: "Save choices" }))
     await screen.findByTestId("codeprint-clarity")
@@ -150,9 +203,7 @@ describe("optional analytics consent", () => {
       throw new Error("blocked")
     })
     render(<AnalyticsProvider googleId={googleId} clarityId="synthetic123" replayConfigured />)
-    fireEvent.click(await screen.findByRole("checkbox", { name: /Marketing page replay/ }))
-    fireEvent.click(screen.getByRole("checkbox", { name: /Google Analytics/ }))
-    fireEvent.click(screen.getByRole("button", { name: "Save choices" }))
+    fireEvent.click(await screen.findByRole("button", { name: "Accept all" }))
     expect(await screen.findByRole("alert")).toHaveTextContent("Optional tracking stays off")
     expect(screen.queryByTestId("codeprint-clarity")).toBeNull()
     expect(screen.queryByTestId("codeprint-google-analytics")).toBeNull()
