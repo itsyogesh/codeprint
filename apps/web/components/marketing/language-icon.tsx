@@ -1,3 +1,4 @@
+import { FileText, Table2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const DEVICON_NAMES: Record<string, string> = {
@@ -32,6 +33,11 @@ interface LanguageIconProps {
 }
 
 export function LanguageIcon({ className, language, priority = false }: LanguageIconProps) {
+  if (language === "Markdown" || language === "CSV") {
+    const Icon = language === "Markdown" ? FileText : Table2
+    return <Icon aria-hidden="true" className={cn("h-5 w-5 shrink-0", className)} />
+  }
+
   const iconName = DEVICON_NAMES[language] ?? language.toLowerCase()
 
   return (
