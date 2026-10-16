@@ -26,6 +26,16 @@ async function load() {
 }
 
 describe("URL import review", () => {
+  it("returns focus without jumping the page when import is cancelled", () => {
+    render(<UrlImport format="code" hasContent={false} onImport={vi.fn()} />)
+    const trigger = screen.getByRole("button", { name: "Import URL" })
+    const focus = vi.spyOn(trigger, "focus")
+    fireEvent.click(trigger)
+    expect(screen.getByLabelText("Public file URL")).toHaveFocus()
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+    expect(trigger).toHaveFocus()
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true })
+  })
   it("does not replace content until explicitly accepted", async () => {
     mocks.load.mockResolvedValue(source)
     const onImport = vi.fn()
