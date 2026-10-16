@@ -24,6 +24,10 @@ export default function NavHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const languageTriggerRef = useRef<HTMLButtonElement>(null)
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null)
+  const mobilePanelRef = useRef<HTMLDivElement>(null)
+  const mobileCloseRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -40,6 +44,7 @@ export default function NavHeader() {
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (languageMenuOpen) languageTriggerRef.current?.focus({ preventScroll: true })
         setLanguageMenuOpen(false)
         setMobileMenuOpen(false)
       }
@@ -50,7 +55,50 @@ export default function NavHeader() {
       document.removeEventListener("pointerdown", onPointerDown)
       document.removeEventListener("keydown", onKeyDown)
     }
-  }, [])
+  }, [languageMenuOpen])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const trigger = mobileTriggerRef.current
+    const panel = mobilePanelRef.current
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    mobileCloseRef.current?.focus({ preventScroll: true })
+
+    const containFocus = (event: FocusEvent) => {
+      if (panel && !panel.contains(event.target as Node)) mobileCloseRef.current?.focus({ preventScroll: true })
+    }
+    const onTab = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || event.defaultPrevented || !panel) return
+      const controls = panel.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")
+      const first = controls[0]
+      const last = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last?.focus({ preventScroll: true })
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first?.focus({ preventScroll: true })
+      }
+    }
+    // A hidden mobile sheet must not retain focus or lock scrolling on resize.
+    const desktop = window.matchMedia("(min-width: 768px)")
+    const onDesktop = () => {
+      if (desktop.matches) setMobileMenuOpen(false)
+    }
+    onDesktop()
+    desktop.addEventListener("change", onDesktop)
+    document.addEventListener("focusin", containFocus)
+    document.addEventListener("keydown", onTab)
+    return () => {
+      desktop.removeEventListener("change", onDesktop)
+      document.removeEventListener("focusin", containFocus)
+      document.removeEventListener("keydown", onTab)
+      document.body.style.overflow = previousOverflow
+      const returnTarget = desktop.matches ? languageTriggerRef.current : trigger
+      if (returnTarget?.isConnected) returnTarget.focus({ preventScroll: true })
+    }
+  }, [mobileMenuOpen])
 
   const isLanguagePage = LANGUAGE_PATHS.has(pathname)
   const isMarkdownPage = pathname === "/markdown"
@@ -101,6 +149,7 @@ export default function NavHeader() {
         <nav className="relative hidden items-center gap-1 md:flex" aria-label="Primary navigation">
           <div ref={dropdownRef} className="relative">
             <button
+              ref={languageTriggerRef}
               type="button"
               aria-haspopup="menu"
               aria-expanded={languageMenuOpen}
@@ -119,7 +168,7 @@ export default function NavHeader() {
                   animate={{ opacity: 1, transform: "translateY(0) scale(1)" }}
                   exit={reduceMotion ? { opacity: 0 } : { opacity: 0, transform: "translateY(5px) scale(0.98)" }}
                   transition={{ duration: reduceMotion ? 0.01 : 0.15, ease: [0.23, 1, 0.32, 1] }}
-                  className="absolute left-1/2 top-full mt-2 w-[500px] -translate-x-1/2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-800 dark:bg-slate-900"
+                  className="absolute left-1/2 top-full mt-2 max-h-[calc(100dvh-7rem-env(safe-area-inset-bottom))] w-[500px] -translate-x-1/2 overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div className="grid grid-cols-3 gap-1.5">
                     {LANGUAGES.map((language) => {
@@ -199,6 +248,7 @@ export default function NavHeader() {
             Open Editor
           </Link>
           <button
+            ref={mobileTriggerRef}
             type="button"
             className={cn(
               buttonVariants({ variant: "outline", size: "icon" }),
@@ -207,6 +257,7 @@ export default function NavHeader() {
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open navigation menu"
             aria-expanded={mobileMenuOpen}
+            aria-controls={mobileMenuOpen ? "mobile-navigation-panel" : undefined}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -226,6 +277,8 @@ export default function NavHeader() {
               onClick={closeMobileMenu}
             />
             <motion.div
+              ref={mobilePanelRef}
+              id="mobile-navigation-panel"
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
@@ -233,11 +286,12 @@ export default function NavHeader() {
               animate={{ transform: "translateX(0)" }}
               exit={{ transform: "translateX(100%)" }}
               transition={reduceMotion ? { duration: 0.01 } : { type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 right-0 top-0 z-50 flex w-[min(88vw,340px)] flex-col border-l border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-900"
+              className="fixed right-0 top-0 z-50 flex h-dvh max-h-dvh w-[min(88vw,340px)] flex-col border-l border-slate-200 bg-white pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] md:hidden dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="flex items-center justify-between border-b border-slate-100 p-4 dark:border-slate-800">
                 <span className="font-semibold text-slate-900 dark:text-white">Menu</span>
                 <button
+                  ref={mobileCloseRef}
                   type="button"
                   onClick={closeMobileMenu}
                   className={cn(
@@ -249,7 +303,7 @@ export default function NavHeader() {
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
                 <div className="px-2 pb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
                   Languages
                 </div>
@@ -307,7 +361,7 @@ export default function NavHeader() {
                   ) : null}
                 </div>
               </div>
-              <div className="border-t border-slate-100 p-4 dark:border-slate-800">
+              <div className="shrink-0 border-t border-slate-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-slate-800">
                 <Link
                   href="/#editor-section"
                   onClick={closeMobileMenu}

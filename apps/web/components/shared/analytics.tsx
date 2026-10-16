@@ -233,7 +233,7 @@ export function AnalyticsProvider({
       {showPreferences ? (
         <section
           aria-label="Analytics preferences"
-          className="fixed inset-x-4 bottom-4 z-50 max-h-[calc(100dvh-2rem)] max-w-sm overflow-y-auto rounded-2xl bg-white p-5 shadow-xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700 sm:left-6 sm:right-auto sm:bottom-6 sm:w-96"
+          className="analytics-notice fixed inset-x-4 z-50 max-w-sm overflow-y-auto overscroll-contain rounded-2xl bg-white p-5 shadow-xl ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700 sm:left-6 sm:right-auto sm:w-96"
         >
           <h2 className="text-base font-semibold text-slate-950 dark:text-white">
             {detailsOpen ? "Analytics preferences" : "Help improve Codeprint"}

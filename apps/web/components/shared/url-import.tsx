@@ -60,7 +60,7 @@ export function UrlImport({
     setOpen(false)
     setPending(null)
     setError("")
-    trigger.current?.focus()
+    trigger.current?.focus({ preventScroll: true })
   }
 
   async function load(event: FormEvent) {

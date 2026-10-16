@@ -37,6 +37,8 @@ describe("shared mobile editor layout", () => {
     expect(screen.getByRole("menu")).toHaveClass(
       "max-h-[min(72dvh,var(--radix-dropdown-menu-content-available-height))]",
       "overflow-y-auto",
+      "overscroll-contain",
+      "pb-[max(1rem,env(safe-area-inset-bottom))]",
       "w-[calc(100vw-2rem)]",
     )
     expect(dropdown.props).toHaveBeenCalledWith(expect.objectContaining({ collisionPadding: 12, align: "end" }))
