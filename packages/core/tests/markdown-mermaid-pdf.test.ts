@@ -98,6 +98,46 @@ describe("prepared Markdown Mermaid assets", () => {
 })
 
 describe.skipIf(!hasPdfText || !hasPdfImages)("actual Markdown Mermaid PDFs", () => {
+  it.each([
+    "portrait",
+    "landscape",
+  ] as const)("paginates tall diagrams and long metadata in %s", async (orientation) => {
+    const caption = `${"A detailed explanation of the diagram. ".repeat(45)}Caption end marker.`
+    const source = `flowchart TD\n${Array.from({ length: 22 }, (_, i) => `N${i}[Step ${i}] --> N${i + 1}[Step ${i + 1}]`).join("\n")}`
+    const result = await renderPrintablePdf({
+      content: `${"An introductory paragraph.\n\n".repeat(20)}\n\`\`\`mermaid title="Tall diagram" caption="${caption}"\n${source}\n\`\`\`\n\nDocument end marker.`,
+      format: "markdown",
+      filename: "tall-mermaid.md",
+      orientation,
+      margins: "wide",
+    })
+    const text = extractPdfText(result.bytes)
+    expect(result.pages).toBeGreaterThan(1)
+    expect(text).toContain("Caption end marker.")
+    expect(text).toContain("Document end marker.")
+    expect(inspectPdfImages(result.bytes)).toMatch(/\n\s*\d+\s+\d+\s+image\s+/)
+    expect(text).not.toContain("Diagram not rendered")
+  }, 20_000)
+
+  it("embeds wide flowcharts, sequences and state diagrams in one document", async () => {
+    const blocks = [
+      "flowchart LR\nA[Read source] --> B[Prepare document] --> C[Preview pages] --> D[Print locally]",
+      "sequenceDiagram\nUser->>Browser: Open document\nBrowser-->>User: Local preview",
+      "stateDiagram-v2\n[*] --> Ready\nReady --> Printed\nPrinted --> [*]",
+    ]
+    const result = await renderPrintablePdf({
+      content: blocks.map((source, i) => `\`\`\`mermaid title="Chart ${i + 1}"\n${source}\n\`\`\``).join("\n\n"),
+      format: "markdown",
+      filename: "multiple-mermaid.md",
+      pageSize: "letter",
+    })
+    const text = extractPdfText(result.bytes)
+    expect(text).toContain("Chart 1")
+    expect(text).toContain("Chart 3")
+    expect(text).not.toContain("Diagram not rendered")
+    expect(inspectPdfImages(result.bytes).match(/\n\s*\d+\s+\d+\s+image\s+/g)?.length).toBe(3)
+  })
+
   it("embeds supported Mermaid as an image without printing its source", async () => {
     const source = "flowchart LR\nInputNode[Input] --> OutputNode[Output]"
     const result = await renderPrintablePdf({
