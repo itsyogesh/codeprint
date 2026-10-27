@@ -532,15 +532,18 @@ function renderMermaidBlock(code: Tokens.Code, context: RenderContext, key: stri
   if (prepared?.kind === "image") {
     const size = markdownDiagramSize(prepared, context)
     return (
-      <View key={key} style={markdownStyles.diagramFigure} wrap={false}>
+      <View key={key} style={markdownStyles.diagramFigure}>
         {prepared.title && (
-          <Text style={[markdownStyles.diagramTitle, { fontFamily: context.headingFont }]}>
+          <Text
+            minPresenceAhead={size.height + 8}
+            style={[markdownStyles.diagramTitle, { fontFamily: context.headingFont }]}
+          >
             {pdfSafeText(prepared.title)}
           </Text>
         )}
         <Image
           src={prepared.pngDataUri}
-          style={[markdownStyles.diagramImage, { width: size.width, height: size.height }]}
+          style={[markdownStyles.diagramImage, { width: size.width, height: size.height, flexShrink: 0 }]}
         />
         {prepared.caption && (
           <Text style={[markdownStyles.diagramCaption, { fontFamily: context.bodyFont }]}>
